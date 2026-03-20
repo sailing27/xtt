@@ -1,125 +1,1505 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 
 <head>
     <meta charset="UTF-8">
-    <title>小许打字</title>
+    <title>五笔打字练习 - 儿童版</title>
     <style>
+        /* 导入儿童友好字体 */
+        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&family=Comic+Neue:wght@300;400;700&display=swap');
+        
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            background-color: #AAAAAA;
-        }
-
-        #typingArea,
-        #userInput {
-            font-size: 30px;
-            width: 80%;
-            text-align: left;
-            border-radius: 10px;
-            border: 1px solid #000;
+            font-family: 'Comic Neue', cursive;
+            background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
             padding: 20px;
-            background: #DDDDDD;
+            position: relative;
+            height: 100%;
+            box-sizing: border-box;
         }
-
-        #typingArea span {
-            left: 10px;
-            top: 50px;
+        
+        /* 隐藏滚动条但保持滚动功能 */
+        body::-webkit-scrollbar {
+            width: 0px;
+            height: 0px;
         }
-
+        
+        body {
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
+        }
+        
+        /* 主容器确保内容不超出视口 */
+        .main-container {
+            height: calc(100% - 50px); /* 减去编码显示框高度 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow: hidden;
+            padding-top: 5px;
+            box-sizing: border-box;
+        }
+        
+        /* 添加可爱的背景装饰 */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(129, 140, 248, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 30%, rgba(249, 115, 22, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 50% 80%, rgba(79, 70, 229, 0.1) 0%, transparent 20%);
+            z-index: -1;
+        }
+        
         #title {
-            color: white;
+            color: #4F46E5;
+            text-align: center;
+            font-family: 'Baloo 2', cursive;
+            font-size: 2.5rem;
+            margin: 5px 0 10px;
+            text-shadow: 2px 2px 0px rgba(129, 140, 248, 0.3);
+            position: relative;
+            display: inline-block;
+            padding: 0 20px;
         }
-
-        #statusbar {
-            background-color: #000;
+        
+        #title::after {
+            content: "✨";
+            position: absolute;
+            right: -25px;
+            top: 5px;
+            font-size: 1.5rem;
+        }
+        
+        #typingArea {
+            font-size: 28px;
+            width: 90%;
+            max-width: 1000px;
+            text-align: left;
+            padding: 30px;
+            margin: 0 auto 10px;
+            line-height: 1.8;
+            min-height: 100px;
+            transition: all 0.3s ease;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        /* 五笔模式样式（单字和词组） */
+        body.wubi-mode #typingArea {
+            border-radius: 24px;
+            border: 4px solid #4F46E5;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 
+                inset -4px -4px 12px rgba(0, 0, 0, 0.1),
+                8px 8px 24px rgba(79, 70, 229, 0.2);
+        }
+        
+        /* 英文模式样式 - 和五笔模式保持一致 */
+        body.english-mode #typingArea {
+            border-radius: 24px;
+            border: 4px solid #4F46E5;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: inset -4px -4px 12px rgba(0, 0, 0, 0.1), 8px 8px 24px rgba(79, 70, 229, 0.2);
+            font-family: Arial, sans-serif;
+        }
+        
+        #typingArea::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        #typingArea::-webkit-scrollbar-track {
+            background: rgba(79, 70, 229, 0.1);
+            border-radius: 3px;
+        }
+        
+        #typingArea::-webkit-scrollbar-thumb {
+            background: #4F46E5;
+            border-radius: 3px;
+        }
+        
+        #typingArea span {
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+        
+        #statusInfo {
+            font-size: 24px;
+            background: linear-gradient(135deg, #4F46E5, #818CF8);
             color: white;
+            padding: 15px 20px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 1000px;
+            margin: 0 auto 10px;
+            text-align: center;
+            position: fixed;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+            font-weight: 500;
+            z-index: 999;
+        }
+        
+        #statusInfo::before {
+            content: "💡";
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+        }
+        
+        #statusbar {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
+            text-align: center;
+            padding: 15px;
+            font-size: 20px;
+        }
+        
+        /* 五笔模式状态栏 */
+        body.wubi-mode #statusbar {
+            background: linear-gradient(90deg, #F97316, #FB923C);
+            color: white;
+        }
+        
+        /* 英文模式状态栏 - 简单黑色 */
+        body.english-mode #statusbar {
+            background-color: #000;
+            color: white;
             text-align: right;
-            margin-right: 200px;
-            padding: 10px;
+            padding-right: 200px;
         }
-
-        .init {
+            font-weight: bold;
+            box-shadow: 0 -4px 20px rgba(249, 115, 22, 0.3);
+            z-index: 1000;
+        }
+        
+        #statusbar::before {
+            content: "🏆";
+            margin-right: 10px;
+            font-size: 24px;
+        }
+        
+        /* 五笔模式字符样式 - 和英文模式保持一致（简洁风格） */
+        body.wubi-mode #typingArea .init,
+        body.wubi-mode #typingArea .cursor,
+        body.wubi-mode #typingArea .correct,
+        body.wubi-mode #typingArea .wrong {
+            display: inline;
             line-height: 1.8em;
+            padding: 0;
+            border-radius: 0;
+            border: none;
+            margin-right: 0;
+            margin-bottom: 0;
+            box-sizing: border-box;
+            font-weight: normal;
+            position: relative;
+            font-size: 28px;
         }
-
-        .cursor {
-            background: green;
+        
+        body.wubi-mode #typingArea .init {
+            color: inherit;
+            background: transparent;
+        }
+        
+        body.wubi-mode #typingArea .cursor {
+            background: #10B981;
             color: white;
-            line-height: 1.8em;
         }
-
-        .correct {
-            color: green;
-            line-height: 1.8em;
+        
+        body.wubi-mode #typingArea .correct {
+            color: #10B981;
+            background: transparent;
         }
-
-        .wrong {
+        
+        body.wubi-mode #typingArea .wrong {
             color: white;
-            background: red;
+            background: #EF4444;
+        }
+        
+        /* 词组模式字符样式 - 保持原来的花哨风格（圆角边框），但字体大小一致 */
+        body.phrase-mode #typingArea .init,
+        body.phrase-mode #typingArea .cursor,
+        body.phrase-mode #typingArea .correct,
+        body.phrase-mode #typingArea .wrong {
+            display: inline-block;
             line-height: 1.8em;
+            padding: 4px 6px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            margin-right: 6px;
+            margin-bottom: 6px;
+            box-sizing: border-box;
+            font-weight: normal;
+            position: relative;
+            font-size: 28px;
+        }
+        
+        body.phrase-mode #typingArea .init {
+            color: #1E1B4B;
+            background: rgba(238, 242, 255, 0.7);
+            border-color: #C7D2FE;
+        }
+        
+        body.phrase-mode #typingArea .cursor {
+            background: #10B981;
+            color: white;
+            border-color: white;
+        }
+        
+        body.phrase-mode #typingArea .correct {
+            color: #10B981;
+            background: rgba(16, 185, 129, 0.1);
+            border-color: #10B981;
+        }
+        
+        body.phrase-mode #typingArea .wrong {
+            color: white;
+            background: #EF4444;
+            border-color: white;
+        }
+        
+        /* 英文模式字符样式 - 简单干净 */
+        body.english-mode #typingArea .init,
+        body.english-mode #typingArea .cursor,
+        body.english-mode #typingArea .correct,
+        body.english-mode #typingArea .wrong {
+            display: inline !important;
+            line-height: 1.8em;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            border: none !important;
+            margin-right: 0 !important;
+            margin-bottom: 0 !important;
+            box-sizing: border-box;
+            font-weight: normal !important;
+            position: relative;
+            font-size: 28px;
+        }
+        
+        body.english-mode #typingArea .init {
+            color: inherit;
+            background: transparent !important;
+        }
+        
+        body.english-mode #typingArea .cursor {
+            background: #10B981 !important;
+            color: white;
+        }
+        
+        body.english-mode #typingArea .correct {
+            color: #10B981 !important;
+            background: transparent !important;
+        }
+        
+        body.english-mode #typingArea .wrong {
+            color: white !important;
+            background: #EF4444 !important;
+        }
+        
+
+        
+        /* 烟花效果 - 使用多个粒子 */
+        .correct.firework::before {
+            content: "🎆";
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            animation: firework 0.8s ease-out forwards;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        @keyframes firework {
+            0% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0) scale(0.5);
+            }
+            50% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(-30px) scale(1.2);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-50px) scale(1.5);
+            }
+        }
+        
+        /* 随机颜色的小烟花粒子 */
+        .correct.firework-1::before { animation: firework1 0.6s ease-out forwards; }
+        .correct.firework-2::before { animation: firework2 0.6s ease-out forwards; }
+        .correct.firework-3::before { animation: firework3 0.6s ease-out forwards; }
+        
+        @keyframes firework1 {
+            0% { opacity: 1; transform: translateX(-50%) translateY(0) scale(0); content: "✨"; }
+            30% { opacity: 1; transform: translateX(-80%) translateY(-20px) scale(1); }
+            100% { opacity: 0; transform: translateX(-120%) translateY(-40px) scale(0.5); content: "✨"; }
+        }
+        
+        @keyframes firework2 {
+            0% { opacity: 1; transform: translateX(-50%) translateY(0) scale(0); content: "⭐"; }
+            30% { opacity: 1; transform: translateX(-50%) translateY(-25px) scale(1.2); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-50px) scale(0.8); content: "⭐"; }
+        }
+        
+        @keyframes firework3 {
+            0% { opacity: 1; transform: translateX(-50%) translateY(0) scale(0); content: "💫"; }
+            30% { opacity: 1; transform: translateX(-20%) translateY(-20px) scale(1); }
+            100% { opacity: 0; transform: translateX(20%) translateY(-40px) scale(0.5); content: "💫"; }
+        }
+        
+        @keyframes popIn {
+            0% { transform: translateX(-50%) scale(0); }
+            70% { transform: translateX(-50%) scale(1.3); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+        
+
+        
+        /* 炫酷完成对话框 */
+        #completionDialog {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #completionDialog.show {
+            display: flex;
+        }
+        
+        .dialog-content {
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            max-width: 320px;
+            width: 85%;
+            border: 2px solid #4F46E5;
+            box-shadow: 
+                0 0 30px rgba(79, 70, 229, 0.5),
+                0 10px 30px rgba(0, 0, 0, 0.5);
+            animation: dialogPopIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+            margin-top: -25vh;
+        }
+        
+        @keyframes dialogPopIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.5) translateY(-50px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        
+        .dialog-content::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 40%,
+                rgba(255, 255, 255, 0.1) 50%,
+                transparent 60%
+            );
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .dialog-title {
+            font-family: 'Baloo 2', cursive;
+            font-size: 1.4rem;
+            color: #fff;
+            margin: 0 0 8px 0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .dialog-emoji {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: block;
+            animation: bounce 1s infinite;
+        }
+        
+        .dialog-stats {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            text-align: center;
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            flex: 1;
+            max-width: 140px;
+        }
+        
+        .stat-item:hover {
+            transform: translateY(-2px);
+            border-color: #4F46E5;
+        }
+        
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #fff;
+            display: block;
+            line-height: 1.3;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 100%;
+            padding: 0 2px;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 5px;
+            display: block;
+            line-height: 1.2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 100%;
+            padding: 0 2px;
+        }
+        
+        .stat-item.speed .stat-value { color: #10B981; }
+        .stat-item.accuracy .stat-value { color: #F97316; }
+        .stat-item.correct .stat-value { color: #34D399; }
+        .stat-item.wrong .stat-value { color: #F87171; }
+        
+        .dialog-message {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.85rem;
+            margin: 12px 0;
+            position: relative;
+            z-index: 1;
+            line-height: 1.4;
+        }
+        
+        .dialog-btn {
+            background: linear-gradient(135deg, #4F46E5, #818CF8);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            font-size: 0.9rem;
+            font-family: 'Baloo 2', cursive;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.4);
+            position: relative;
+            z-index: 1;
+            margin-top: 8px;
+        }
+        
+        .dialog-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.6);
+        }
+        
+        .dialog-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+        
+        /* 烟花背景效果 */
+        .confetti {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            animation: confettiFall 3s linear infinite;
+        }
+        
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-50px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(250px) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        /* 添加可爱的装饰元素 */
+        .decoration {
+            position: fixed;
+            z-index: -1;
+            font-size: 40px;
+            opacity: 0.3;
+        }
+        
+        .decoration:nth-child(1) { top: 10%; left: 5%; }
+        .decoration:nth-child(2) { top: 20%; right: 10%; }
+        .decoration:nth-child(3) { bottom: 30%; left: 15%; }
+        .decoration:nth-child(4) { bottom: 20%; right: 5%; }
+        
+        /* 添加说明区域 */
+        .instructions {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px auto;
+            width: 90%;
+            max-width: 1000px;
+            border: 3px solid #818CF8;
+            box-shadow: 0 6px 20px rgba(129, 140, 248, 0.2);
+        }
+        
+        .instructions h3 {
+            color: #4F46E5;
+            font-family: 'Baloo 2', cursive;
+            margin-top: 0;
+            font-size: 1.8rem;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+            font-size: 1.2rem;
+            color: #1E1B4B;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            #title {
+                font-size: 2.5rem;
+            }
+            
+            #typingArea {
+                font-size: 28px;
+                padding: 20px;
+            }
+            
+            body.wubi-mode #typingArea,
+            body.english-mode #typingArea {
+                padding: 20px;
+            }
+            
+            #statusInfo {
+                font-size: 22px;
+                padding: 15px;
+            }
+            
+            #statusbar {
+                font-size: 18px;
+                padding: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #title {
+                font-size: 2rem;
+            }
+            
+            #typingArea {
+                font-size: 24px;
+                padding: 15px;
+            }
+            
+            body.wubi-mode #typingArea,
+            body.english-mode #typingArea {
+                padding: 15px;
+            }
+            
+            #statusInfo {
+                font-size: 18px;
+                padding: 12px;
+            }
+            
+            .instructions {
+                padding: 15px;
+            }
         }
     </style>
+</head>
+
+<body onkeydown="onePress(event)">
+    <!-- 可爱的装饰元素 -->
+    <div class="decoration">🐱</div>
+    <div class="decoration">🐶</div>
+    <div class="decoration">🐼</div>
+    <div class="decoration">🦊</div>
+    
+    <div class="main-container">
+        <div style="display: flex; justify-content: center; align-items: center; width: 90%; max-width: 1000px; margin: 0 auto 20px auto; position: relative;">
+            <h1 id="title" style="margin: 0;">小许打字</h1>
+            
+            <div id="practiceMode" style="position: absolute; right: 0; display: inline-flex; gap: 10px;">
+                <button id="englishModeBtn" class="mode-btn active" onclick="switchMode('english')" style="background: linear-gradient(135deg, #4F46E5, #818CF8); color: white; border: none; padding: 8px 16px; border-radius: 12px; font-family: 'Baloo 2', cursive; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease;">
+                    🇬🇧 英文
+                </button>
+                <button id="singleModeBtn" class="mode-btn" onclick="switchMode('single')" style="background: rgba(79, 70, 229, 0.1); color: #4F46E5; border: 2px solid #4F46E5; padding: 8px 16px; border-radius: 12px; font-family: 'Baloo 2', cursive; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease;">
+                    🎯 单字
+                </button>
+                <button id="phraseModeBtn" class="mode-btn" onclick="switchMode('phrase')" style="background: rgba(79, 70, 229, 0.1); color: #4F46E5; border: 2px solid #4F46E5; padding: 8px 16px; border-radius: 12px; font-family: 'Baloo 2', cursive; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease;">
+                    📝 词组
+                </button>
+            </div>
+        </div>
+        
+        <div align="center">
+            <div id="typingArea">数据加载中...</div>
+        </div>
+        <div id="statusInfo"></div>
+        <div id="statusbar"></div>
+    </div>
+    
+    <!-- 完成对话框 -->
+    <div id="completionDialog">
+        <div class="dialog-content">
+            <span class="dialog-emoji">🎉</span>
+            <h2 class="dialog-title">太棒了！</h2>
+            <div class="dialog-stats">
+                <div class="stat-item speed">
+                    <span class="stat-value" id="dialogSpeed">0</span>
+                    <span class="stat-label">速度 (字/分钟)</span>
+                </div>
+                <div class="stat-item accuracy">
+                    <span class="stat-value" id="dialogAccuracy">0%</span>
+                    <span class="stat-label">正确率</span>
+                </div>
+            </div>
+            <p class="dialog-message" id="dialogMessage">你做得真棒！继续加油！</p>
+            <button class="dialog-btn" onclick="continueNext()">继续下一句 →</button>
+        </div>
+    </div>
+    
     <script>
-        const fileCount = 10;
-        let contents = null;
+        let wubiData = []; // 将从wb86.txt动态加载
+        
+        // 后备五笔数据，当fetch失败时使用
+        const fallbackWubiData = [
+            { char: '我', code: 'q' },
+            { char: '是', code: 'j' },
+            { char: '一', code: 'g' },
+            { char: '名', code: 'qk' },
+            { char: '程', code: 'tkgg' },
+            { char: '序', code: 'ycb' },
+            { char: '员', code: 'km' },
+            { char: '每', code: 'txg' },
+            { char: '天', code: 'gd' },
+            { char: '都', code: 'ftjb,dnj' },
+            { char: '在', code: 'd' },
+            { char: '学', code: 'ip' },
+            { char: '习', code: 'nu' },
+            { char: '新', code: 'usr,usrn' },
+            { char: '的', code: 'r' },
+            { char: '技', code: 'rfc' },
+            { char: '术', code: 'sy' },
+            { char: '。', code: 'yyy' },
+            { char: '，', code: 'yyy' },
+            { char: '中', code: 'k' },
+            { char: '国', code: 'l,lg' },
+            { char: '互', code: 'gx' },
+            { char: '联', code: 'bu' },
+            { char: '网', code: 'mqq' },
+            { char: '行', code: 'tf' },
+            { char: '业', code: 'og' },
+            { char: '发', code: 'v' },
+            { char: '展', code: 'na' },
+            { char: '非', code: 'djd' },
+            { char: '常', code: 'ipkh' },
+            { char: '迅', code: 'nfp' },
+            { char: '速', code: 'gkip' },
+            { char: '打', code: 'rs' },
+            { char: '字', code: 'pb' },
+            { char: '可', code: 'sk' },
+            { char: '以', code: 'c' },
+            { char: '提', code: 'rj' },
+            { char: '高', code: 'ym' },
+            { char: '工', code: 'a' },
+            { char: '作', code: 'wt' },
+            { char: '效', code: 'uqt' },
+            { char: '率', code: 'yx' },
+            { char: '今', code: 'wynb' },
+            { char: '气', code: 'rtg' },
+            { char: '很', code: 'tve' },
+            { char: '好', code: 'vb' },
+            { char: '适', code: 'tdp' },
+            { char: '合', code: 'wgk' },
+            { char: '出', code: 'bm' },
+            { char: '去', code: 'fcu' },
+            { char: '散', code: 'aet' },
+            { char: '步', code: 'hi' },
+            { char: '人', code: 'w' },
+            { char: '工', code: 'a' },
+            { char: '智', code: 'tdkj' },
+            { char: '能', code: 'ce' },
+            { char: '正', code: 'ghd' },
+            { char: '在', code: 'd' },
+            { char: '改', code: 'nty' },
+            { char: '变', code: 'yo' },
+            { char: '们', code: 'wu' },
+            { char: '生', code: 'tg' },
+            { char: '活', code: 'itd' },
+            { char: '方', code: 'yy' },
+            { char: '式', code: 'aa' },
+            { char: '读', code: 'yfn' },
+            { char: '书', code: 'nnh' },
+            { char: '开', code: 'ga' },
+            { char: '阔', code: 'uit' },
+            { char: '视', code: 'pym' },
+            { char: '野', code: 'jfc' },
+            { char: '和', code: 't' },
+            { char: '思', code: 'ln' },
+            { char: '维', code: 'xwy' },
+            { char: '健', code: 'wvf' },
+            { char: '康', code: 'yvi' },
+            { char: '包', code: 'qn' },
+            { char: '括', code: 'rtd' },
+            { char: '运', code: 'fcp' },
+            { char: '动', code: 'fcl' },
+            { char: '饮', code: 'qnq' },
+            { char: '食', code: 'wyv' },
+            { char: '科', code: 'tu' },
+            { char: '让', code: 'yh' },
+            { char: '加', code: 'lk' },
+            { char: '更', code: 'gjq' },
+            { char: '利', code: 'tjh' },
+            { char: '教', code: 'ftbt' },
+            { char: '育', code: 'yce' },
+            { char: '命', code: 'wgkb' },
+            { char: '运', code: 'fcp' },
+            { char: '重', code: 'tgj' },
+            { char: '要', code: 's' },
+            { char: '途', code: 'wgp' },
+            { char: '径', code: 'tca' }
+        ];
+
+        let contents = [];
         let globalIdx = 1;
         var startTime = null;
+        var currentInputCode = "";
+        var characterStartTime = null; // 当前字符开始显示的时间
 
-        async function initLoadData() {
-            let randomFile = Math.floor(Math.random() * fileCount + 1);
+        // 将中文标点映射到对应的英文按键
+        function mapChinesePunctuationToKey(chinesePunct) {
+            const mapping = {
+                "。": ".",
+                "，": ",",
+                "、": "\\",
+                "；": ";",
+                "：": ":",
+                "？": "?",
+                "！": "!",
+                "《": ["<", ">"],
+                "》": ["<", ">"],
+                "（": ["(", ")"],
+                "）": ["(", ")"],
+                "【": ["[", "]"],
+                "】": ["[", "]"],
+                "｛": ["{", "}"],
+                "｝": ["{", "}"]
+            };
+            
+            return mapping[chinesePunct] || chinesePunct;
+        }
+        
+        // 判断字符是否是ASCII字符（英文字母、数字、标点符号等）
+        function isAsciiChar(char) {
+            // ASCII字符的Unicode编码范围是0-127
+            return char.charCodeAt(0) <= 127;
+        }
+        
+        // 检查按键是否匹配字符（支持中文标点映射）
+        function keyMatchesChar(key, char) {
+            // 如果是中文标点，检查映射
+            const mappedKey = mapChinesePunctuationToKey(char);
+            
+            if (Array.isArray(mappedKey)) {
+                // 多个可能的按键（如《可以匹配<或>）
+                return mappedKey.includes(key);
+            } else {
+                // 单个按键映射
+                return key === mappedKey;
+            }
+        }
+        
+        // 判断字符是否是标点符号（包括中文标点）
+        function isPunctuationChar(char) {
+            // 常见标点符号的Unicode范围
+            const charCode = char.charCodeAt(0);
+            
+            // ASCII标点: !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
+            if (charCode >= 33 && charCode <= 47) return true;  // !"#$%&'()*+,-./
+            if (charCode >= 58 && charCode <= 64) return true;  // :;<=>?@
+            if (charCode >= 91 && charCode <= 96) return true;  // [\]^_`
+            if (charCode >= 123 && charCode <= 126) return true; // {|}~
+            
+            // 中文标点符号范围
+            // 中文标点: 。，、；：？！「」『』【】《》（）［］｛｝～·…—‘’""
+            if (charCode >= 0x3000 && charCode <= 0x303F) return true; // CJK符号和标点
+            if (charCode >= 0xFF00 && charCode <= 0xFFEF) {
+                // 全角字符范围，包括全角标点
+                // 检查常见全角标点
+                const fullWidthPunctuation = "，。、；：？！「」『』【】《》（）［］｛｝～·…—‘'\"";
+                return fullWidthPunctuation.includes(char);
+            }
+            
+            // 特殊标点符号
+            const specialPunctuation = "·•▪■□▲△○●★☆◆◇♠♣♥♦♪♫←↑→↓↔↕↖↗↘↙";
+            if (specialPunctuation.includes(char)) return true;
+            
+            return false;
+        }
+
+        // 检查输入是否匹配任何编码（支持多个编码用逗号分隔）
+        function matchesAnyCode(input, codesStr) {
+            const codes = codesStr.split(',');
+            return codes.some(code => code.toLowerCase() === input.toLowerCase());
+        }
+
+        // 检查输入是否是任何编码的前缀（支持多个编码用逗号分隔）
+        function isPrefixOfAnyCode(input, codesStr) {
+            const codes = codesStr.split(',');
+            return codes.some(code => code.toLowerCase().startsWith(input.toLowerCase()));
+        }
+        
+        // 检查编码是否是短编码（3个或更少字符）
+        function isShortCode(codesStr) {
+            const codes = codesStr.split(',');
+            return codes.some(code => code.length <= 3);
+        }
+        
+        // 检查是否存在更长的编码可能匹配（用于决定是否继续等待输入）
+        function hasLongerCodePossible(input, codesStr) {
+            const codes = codesStr.split(',');
+            // 如果输入已经是某个编码，检查是否还有其他编码比当前输入长且以此输入为前缀
+            return codes.some(code => 
+                code.length > input.length && 
+                code.toLowerCase().startsWith(input.toLowerCase())
+            );
+        }
+
+        // 全局变量
+        let currentMode = 'english'; // 'english'、'single' 或 'phrase'
+        let singleCharData = [];
+        let phraseData = [];
+        let englishContents = []; // 英文练习内容
+        let isRestarting = false; // 防止重复调用restart
+        
+        // URL hash 处理函数
+        function getModeFromURL() {
+            const hash = window.location.hash;
+            if (hash === '#english') {
+                return 'english';
+            } else if (hash === '#phrase') {
+                return 'phrase';
+            } else if (hash === '#single') {
+                return 'single';
+            }
+            return null; // 没有有效的hash
+        }
+        
+        function setModeToURL(mode) {
+            if (mode === 'english' || mode === 'single' || mode === 'phrase') {
+                window.location.hash = mode;
+                console.log(`URL hash 更新为: #${mode}`);
+            }
+        }
+        
+        // 根据当前模式更新按钮样式
+        function updateModeButtons() {
+            const englishBtn = document.getElementById('englishModeBtn');
+            const singleBtn = document.getElementById('singleModeBtn');
+            const phraseBtn = document.getElementById('phraseModeBtn');
+            
+            // 重置所有按钮
+            englishBtn.style.background = 'rgba(79, 70, 229, 0.1)';
+            englishBtn.style.color = '#4F46E5';
+            englishBtn.style.border = '2px solid #4F46E5';
+            
+            singleBtn.style.background = 'rgba(79, 70, 229, 0.1)';
+            singleBtn.style.color = '#4F46E5';
+            singleBtn.style.border = '2px solid #4F46E5';
+            
+            phraseBtn.style.background = 'rgba(79, 70, 229, 0.1)';
+            phraseBtn.style.color = '#4F46E5';
+            phraseBtn.style.border = '2px solid #4F46E5';
+            
+            // 设置当前活动按钮
+            if (currentMode === 'english') {
+                englishBtn.style.background = 'linear-gradient(135deg, #4F46E5, #818CF8)';
+                englishBtn.style.color = 'white';
+                englishBtn.style.border = 'none';
+            } else if (currentMode === 'single') {
+                singleBtn.style.background = 'linear-gradient(135deg, #4F46E5, #818CF8)';
+                singleBtn.style.color = 'white';
+                singleBtn.style.border = 'none';
+            } else if (currentMode === 'phrase') {
+                phraseBtn.style.background = 'linear-gradient(135deg, #4F46E5, #818CF8)';
+                phraseBtn.style.color = 'white';
+                phraseBtn.style.border = 'none';
+            }
+        }
+        
+        // 加载五笔编码数据
+        async function loadWubiData() {
+            // 检查是否通过file://协议访问
+            if (window.location.protocol === 'file:') {
+                console.log('File protocol detected, using fallback wubi data');
+                singleCharData = fallbackWubiData;
+                phraseData = []; // 文件协议下没有词组数据
+                console.log(`使用后备数据: ${singleCharData.length} 个字符的五笔编码`);
+                return true;
+            }
+            
             try {
-                const response = await fetch(`contents/${randomFile}.txt`);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok ' + response.statusText);
-                    
+                // 加载单字数据
+                console.log('Attempting to fetch wb86_single.txt');
+                const singleResponse = await fetch('wb86_single.txt');
+                if (!singleResponse.ok) {
+                    throw new Error(`无法加载单字编码文件: ${singleResponse.statusText}`);
                 }
-
-                const text = await response.text();
-                const lines = text.split('\n').map(str => str.trim());;
-
-                const nonEmptyLines = lines.filter(line => line.trim() !== '');
-                contents = nonEmptyLines;
-                restart();
+                
+                const singleText = await singleResponse.text();
+                const singleLines = singleText.split('\n').filter(line => line.trim() !== '');
+                
+                const singleCharToCodeMap = new Map();
+                singleLines.forEach(line => {
+                    const parts = line.split(' ');
+                    if (parts.length >= 2) {
+                        const code = parts[0];
+                        const char = parts[1];
+                        
+                        if (singleCharToCodeMap.has(char)) {
+                            const existingCode = singleCharToCodeMap.get(char);
+                            if (!existingCode.includes(code)) {
+                                singleCharToCodeMap.set(char, `${existingCode},${code}`);
+                            }
+                        } else {
+                            singleCharToCodeMap.set(char, code);
+                        }
+                    }
+                });
+                
+                singleCharData = Array.from(singleCharToCodeMap.entries()).map(([char, code]) => ({ char, code }));
+                console.log(`成功加载单字数据: ${singleCharData.length} 个字符`);
+                
+                // 加载词组数据
+                console.log('Attempting to fetch wb86_phrase.txt');
+                const phraseResponse = await fetch('wb86_phrase.txt');
+                if (!phraseResponse.ok) {
+                    console.warn('无法加载词组编码文件，词组练习不可用');
+                    phraseData = [];
+                } else {
+                    const phraseText = await phraseResponse.text();
+                    const phraseLines = phraseText.split('\n').filter(line => line.trim() !== '');
+                    
+                    phraseData = phraseLines.map(line => {
+                        const parts = line.split(' ');
+                        if (parts.length >= 2) {
+                            const code = parts[0];
+                            const phrase = parts.slice(1).join(' ');
+                            return { char: phrase, code: code };
+                        }
+                        return null;
+                    }).filter(item => item !== null);
+                    
+                    console.log(`成功加载词组数据: ${phraseData.length} 个词组`);
+                }
+                
+                return true;
             } catch (error) {
-                console.error('read data error:', error);
-                document.getElementById('typingArea').innerHTML = "数据加载失败，请刷新重试。";
+                console.error('加载五笔编码数据失败，使用后备数据:', error);
+                // 使用后备数据
+                singleCharData = fallbackWubiData;
+                phraseData = [];
+                console.log(`使用后备数据: ${singleCharData.length} 个字符的五笔编码`);
+                return true; // 返回true，因为后备数据可用
+            }
+        }
+        
+        // 获取当前模式的数据
+        function getCurrentData() {
+            if (currentMode === 'english') {
+                return englishContents;
+            } else if (currentMode === 'single') {
+                return singleCharData;
+            } else {
+                return phraseData;
+            }
+        }
+        
+        // 切换练习模式
+        function switchMode(mode) {
+            if (mode === currentMode) return;
+            
+            currentMode = mode;
+            
+            // 更新URL hash
+            setModeToURL(mode);
+            
+            // 更新按钮样式
+            updateModeButtons();
+            
+            // 更新打字区域样式
+            updateTypingAreaStyle();
+            
+            // 重新开始练习
+            restart();
+        }
+        
+        function updateTypingAreaStyle() {
+            const body = document.body;
+            const typingArea = document.getElementById('typingArea');
+            
+            // 移除所有模式类
+            body.classList.remove('wubi-mode', 'english-mode', 'phrase-mode');
+            typingArea.classList.remove('wubi-mode', 'english-mode', 'phrase-mode');
+            
+            // 统一的背景样式
+            typingArea.style.background = 'rgba(255, 255, 255, 0.95)';
+            typingArea.style.borderRadius = '24px';
+            typingArea.style.border = '4px solid #4F46E5';
+            typingArea.style.boxShadow = 'inset -4px -4px 12px rgba(0, 0, 0, 0.1), 8px 8px 24px rgba(79, 70, 229, 0.2)';
+            
+            // 根据模式设置字体
+            if (currentMode === 'english') {
+                body.classList.add('english-mode');
+                typingArea.classList.add('english-mode');
+                typingArea.style.fontFamily = 'Arial, sans-serif';
+            } else if (currentMode === 'single') {
+                body.classList.add('wubi-mode');
+                typingArea.classList.add('wubi-mode');
+                typingArea.style.fontFamily = "'Baloo 2', cursive";
+            } else if (currentMode === 'phrase') {
+                body.classList.add('phrase-mode');
+                typingArea.classList.add('phrase-mode');
+                typingArea.style.fontFamily = "'Baloo 2', cursive";
+            }
+        }
+        
+        // 从contents_wb目录加载随机故事内容
+        async function loadRandomStoryContent() {
+            // 检查是否通过file://协议访问
+            if (window.location.protocol === 'file:') {
+                console.log('File protocol detected, using fallback story content');
+                // 返回后备故事内容
+                return "小丽帮妈妈洗碗，擦得干干净净。看到了漂亮的月亮。可是慢慢地玩玩具。看到了神奇的小鱼。因此认真地玩太阳。";
+            }
+            
+            try {
+                // 随机选择1-100之间的文件
+                const randomFileNum = Math.floor(Math.random() * 100) + 1;
+                const fileName = randomFileNum.toString().padStart(3, '0') + '.txt';
+                const filePath = `contents_wb/${fileName}`;
+                
+                console.log(`尝试加载故事文件: ${filePath}`);
+                const response = await fetch(filePath);
+                
+                if (!response.ok) {
+                    throw new Error(`无法加载故事文件 ${fileName}: ${response.statusText}`);
+                }
+                
+                const storyText = await response.text();
+                console.log(`成功加载故事内容: ${storyText.length} 个字符`);
+                return storyText.trim();
+            } catch (error) {
+                console.error('加载故事内容失败:', error);
+                // 返回后备故事内容
+                return "小丽帮妈妈洗碗，擦得干干净净。看到了漂亮的月亮。可是慢慢地玩玩具。看到了神奇的小鱼。因此认真地玩太阳。";
+            }
+        }
+        
+        // 加载英文练习内容
+        async function loadEnglishContent() {
+            // 检查是否通过file://协议访问
+            if (window.location.protocol === 'file:') {
+                console.log('File protocol detected, using fallback english content');
+                // 返回后备英文内容
+                return [
+                    "The quick brown fox jumps over the lazy dog.",
+                    "Practice makes perfect when learning to type.",
+                    "Typing speed improves with consistent practice.",
+                    "Every day is a new opportunity to learn.",
+                    "Technology helps us connect with the world.",
+                    "Learning new skills keeps our minds active.",
+                    "Patience and persistence lead to success.",
+                    "Reading books expands our knowledge.",
+                    "Writing helps organize our thoughts clearly.",
+                    "Communication is key in every relationship."
+                ];
+            }
+            
+            try {
+                const fileCount = 10;
+                const randomFile = Math.floor(Math.random() * fileCount) + 1;
+                const response = await fetch(`contents/${randomFile}.txt`);
+                
+                if (!response.ok) {
+                    throw new Error(`无法加载英文内容文件 ${randomFile}.txt: ${response.statusText}`);
+                }
+                
+                const text = await response.text();
+                const lines = text.split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line.trim() !== '');
+                
+                console.log(`成功加载英文内容: ${lines.length} 行`);
+                return lines;
+            } catch (error) {
+                console.error('加载英文内容失败，使用后备内容:', error);
+                // 返回后备英文内容
+                return [
+                    "The quick brown fox jumps over the lazy dog.",
+                    "Practice makes perfect when learning to type.",
+                    "Typing speed improves with consistent practice.",
+                    "Every day is a new opportunity to learn.",
+                    "Technology helps us connect with the world.",
+                    "Learning new skills keeps our minds active.",
+                    "Patience and persistence lead to success.",
+                    "Reading books expands our knowledge.",
+                    "Writing helps organize our thoughts clearly.",
+                    "Communication is key in every relationship."
+                ];
             }
         }
 
-        function restart() {
-            globalIdx = 1;
-            const randomIndex = Math.floor(Math.random() * contents.length);
-            const textToType = contents[randomIndex];
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+        
+        // 标记为正确并触发烟花效果
+        function markAsCorrect(elementId) {
+            const element = document.getElementById(elementId);
+            element.classList.replace("cursor", "correct");
+            
+            // 随机添加烟花效果
+            const fireworkClasses = ['firework-1', 'firework-2', 'firework-3'];
+            const randomClass = fireworkClasses[Math.floor(Math.random() * fireworkClasses.length)];
+            element.classList.add('firework', randomClass);
+            
+            // 动画结束后移除烟花类
+            setTimeout(() => {
+                element.classList.remove('firework', randomClass);
+            }, 800);
+        }
 
+        async function restart() {
+            // 防止重复调用
+            if (isRestarting) {
+                console.log('Restart already in progress, skipping');
+                return;
+            }
+            
+            isRestarting = true;
+            
+            try {
+                globalIdx = 1;
+                currentInputCode = "";
+                startTime = null;
+                
+                const currentData = getCurrentData();
+            
+            if (currentMode === 'english') {
+                // 英文模式：加载英文练习内容
+                try {
+                    englishContents = await loadEnglishContent();
+                    
+                    // 随机选择一句英文
+                    const randomIndex = Math.floor(Math.random() * englishContents.length);
+                    const englishText = englishContents[randomIndex];
+                    
+                    // 将英文文本转换为字符数组（英文没有编码）
+                    contents = englishText.split('').map(char => ({
+                        char: char,
+                        code: "???" // 英文没有五笔编码
+                    }));
+                    
+                    console.log(`英文模式: 加载了 "${englishText}"`);
+                } catch (error) {
+                    console.error('加载英文内容失败，使用后备内容:', error);
+                    // 使用后备英文内容
+                    const backupEnglish = [
+                        "The quick brown fox jumps over the lazy dog.",
+                        "Practice makes perfect when learning to type.",
+                        "Typing speed improves with consistent practice."
+                    ];
+                    const randomText = backupEnglish[Math.floor(Math.random() * backupEnglish.length)];
+                    contents = randomText.split('').map(char => ({
+                        char: char,
+                        code: "???"
+                    }));
+                }
+            } else if (currentMode === 'single') {
+                // 单字模式：从contents_wb目录加载随机故事内容
+                try {
+                    const storyText = await loadRandomStoryContent();
+                    
+                    // 将故事文本转换为字符数组
+                    contents = storyText.split('').map(char => {
+                        // 查找字符对应的五笔编码
+                        const wubiItem = currentData.find(item => item.char === char);
+                        return {
+                            char: char,
+                            code: wubiItem ? wubiItem.code : "???" // 如果没有找到编码，用???代替
+                        };
+                    });
+                    
+                    console.log(`单字模式: 加载了 ${contents.length} 个字符的故事内容`);
+                } catch (error) {
+                    console.error('加载故事内容失败，使用后备句子:', error);
+                    // 使用后备句子
+                    const sentences = [
+                        "我是一名程序员，每天都在学习新的技术。",
+                        "中国的互联网行业发展非常迅速。",
+                        "学习五笔打字可以提高工作效率。",
+                        "今天天气很好，适合出去散步。",
+                        "人工智能正在改变我们的生活方式。",
+                        "读书可以开阔我们的视野和思维。",
+                        "健康的生活方式包括运动和饮食。",
+                        "科技的发展让生活更加便利。",
+                        "教育是改变命运的重要途径。",
+                        "环境保护是我们每个人的责任。"
+                    ];
+                    
+                    const randomSentence = sentences[Math.floor(Math.random() * sentences.length)];
+                    contents = randomSentence.split('').map(char => {
+                        const wubiItem = currentData.find(item => item.char === char);
+                        return {
+                            char: char,
+                            code: wubiItem ? wubiItem.code : "???"
+                        };
+                    });
+                }
+            } else {
+                // 词组模式：随机选择词组，总共约100个字符
+                if (currentData.length === 0) {
+                    // 如果没有词组数据，抛出错误让catch块处理
+                    throw new Error('词组数据加载失败，请切换到单字模式。');
+                }
+                
+                // 随机选择词组，直到总字符数达到约100个
+                const shuffled = shuffleArray([...currentData]);
+                let selectedPhrases = [];
+                let totalChars = 0;
+                
+                for (const phrase of shuffled) {
+                    if (totalChars + phrase.char.length <= 110) { // 目标100字左右，上限110字
+                        selectedPhrases.push(phrase);
+                        totalChars += phrase.char.length;
+                        
+                        if (totalChars >= 90) { // 至少90字
+                            break;
+                        }
+                    }
+                }
+                
+                // 确保至少有一些词组
+                if (selectedPhrases.length === 0 && shuffled.length > 0) {
+                    selectedPhrases = [shuffled[0]];
+                    totalChars = shuffled[0].char.length;
+                }
+                
+                console.log(`词组模式: 选择了 ${selectedPhrases.length} 个词组，共 ${totalChars} 个字符`);
+                
+                // 将词组转换为内容数组
+                contents = selectedPhrases.map(item => ({
+                    char: item.char,
+                    code: item.code
+                }));
+            }
+            
             var idx = 0;
-            startTime = null;
-            const wrappedText = textToType.split('').map(char => `<span id=\"c${idx = idx + 1}\" class=\"init\">${char}</span>`).join('');
+            const wrappedText = contents.map(item => {
+                idx++;
+                return `<span id="c${idx}" class="init">${item.char}</span>`;
+            }).join('');
 
             document.getElementById('typingArea').innerHTML = wrappedText;
             document.getElementById('c1').classList.replace("init", "cursor");
-            document.getElementById("statusbar").innerHTML = "请开始你的表演！";
+            // 设置第一个字符开始显示的时间
+            characterStartTime = Date.now();
+            updateStatusBar();
+            } catch (error) {
+                console.error('重启练习时出错:', error);
+                if (error.message.includes('词组数据加载失败')) {
+                    document.getElementById('typingArea').innerHTML = "词组数据加载失败，请切换到单字模式。";
+                } else {
+                    document.getElementById('typingArea').innerHTML = "加载练习内容失败，请刷新页面重试。";
+                }
+            } finally {
+                isRestarting = false;
+            }
+        }
+
+        function updateStatusBar() {
+            if (globalIdx > 0 && globalIdx <= contents.length) {
+                var currentChar = contents[globalIdx - 1];
+                var debugInfo = "";
+                
+                // 调试信息：显示当前字符索引和字符
+                var debugPrefix = `[${globalIdx}/${contents.length}] ${currentChar.char}: `;
+                
+                // 英文模式：显示英文练习提示
+                if (currentMode === 'english') {
+                    // 如果是空格字符
+                    if (currentChar.char === ' ') {
+                        debugInfo = debugPrefix + `空格 | 按空格键`;
+                    }
+                    // 如果是ASCII字符
+                    else if (isAsciiChar(currentChar.char)) {
+                        var asciiCode = currentChar.char.charCodeAt(0);
+                        debugInfo = debugPrefix + `英文: ${currentChar.char} | 直接输入字符`;
+                    }
+                    // 其他字符（包括标点）
+                    else {
+                        debugInfo = debugPrefix + `英文: ${currentChar.char} | 直接输入字符`;
+                    }
+                }
+                // 五笔模式（单字或词组）
+                else {
+                    // 如果是ASCII字符，显示ASCII编码
+                    if (isAsciiChar(currentChar.char)) {
+                        var asciiCode = currentChar.char.charCodeAt(0);
+                        debugInfo = debugPrefix + `ASCII: ${asciiCode} (${currentChar.char}) | 直接输入字符`;
+                    } 
+                    // 如果是标点符号（包括中文标点）
+                    else if (isPunctuationChar(currentChar.char)) {
+                        // 根据标点类型显示不同的提示
+                        let keyHint = "";
+                        const char = currentChar.char;
+                        
+                        // 常见标点的按键提示
+                        if (char === "。") keyHint = "按 . 键";
+                        else if (char === "，") keyHint = "按 , 键";
+                        else if (char === "、") keyHint = "按 \\ 键";
+                        else if (char === "；") keyHint = "按 ; 键";
+                        else if (char === "：") keyHint = "按 : 键";
+                        else if (char === "？") keyHint = "按 ? 键";
+                        else if (char === "！") keyHint = "按 ! 键";
+                        else if (char === "《" || char === "》") keyHint = "按 < 或 > 键";
+                        else if (char === "（" || char === "）") keyHint = "按 ( 或 ) 键";
+                        else if (char === "【" || char === "】") keyHint = "按 [ 或 ] 键";
+                        else if (char === "｛" || char === "｝") keyHint = "按 { 或 } 键";
+                        else keyHint = "直接按键输入";
+                        
+                        debugInfo = debugPrefix + `标点: ${char} | ${keyHint}`;
+                    }
+                    // 其他字符（中文汉字等），显示五笔编码
+                    else {
+                        // 检查是否已匹配短编码
+                        const isMatched = matchesAnyCode(currentInputCode, currentChar.code);
+                        const isShort = isShortCode(currentChar.code);
+                        
+                        if (isMatched && isShort) {
+                            debugInfo = debugPrefix + `编码: ${currentChar.code} ✓ 已匹配 | 按空格键继续`;
+                        } else {
+                            debugInfo = debugPrefix + `编码: ${currentChar.code} | 已输入: ${currentInputCode}`;
+                        }
+                    }
+                }
+                
+                // 更新状态信息区域
+                document.getElementById("statusInfo").innerHTML = debugInfo;
+                
+                var currentTime = Date.now();
+                var timeDifferenceInSeconds = startTime ? (currentTime - startTime) / 1000 : 0;
+                var correctNum = document.querySelectorAll('.correct').length;
+                var errorNum = document.querySelectorAll('.wrong').length;
+                var total = correctNum + errorNum;
+                
+                var speedInfo = "";
+                if (total > 0 && timeDifferenceInSeconds > 0) {
+                    var speed = total / timeDifferenceInSeconds * 60;
+                    var accuracy = correctNum / total * 100;
+                    var promot = "";
+                    
+                    // 儿童友好的鼓励信息
+                    if (timeDifferenceInSeconds > 10) {
+                        if (speed >= 80 && accuracy > 95) {
+                            promot = currentMode === 'english' ? "🎉 太厉害了！你是英文打字小天才！ | " : "🎉 太厉害了！你是五笔小天才！ | ";
+                        } else if (speed >= 60 && accuracy > 90) {
+                            promot = "🌟 真棒！继续加油！ | ";
+                        } else if (speed >= 40 && accuracy > 85) {
+                            promot = "👍 不错哦！越来越熟练了！ | ";
+                        } else if (accuracy > 80) {
+                            promot = "💪 加油！你可以做得更好！ | ";
+                        }
+                    }
+                    
+                    var modeText = currentMode === 'english' ? '字符' : '字';
+                    speedInfo = `${promot}速度：${speed.toFixed(2)}${modeText}/分钟 | 正确率：${accuracy.toFixed(2)}% | 正确：${correctNum} | 错误：${errorNum} | 总${modeText}数：${total}`;
+                } else {
+                    var modeText = currentMode === 'english' ? '英文' : '五笔';
+                    speedInfo = `🎮 开始${modeText}打字吧！看看你能得多少分！`;
+                }
+                
+                document.getElementById("statusbar").innerHTML = speedInfo;
+            }
         }
 
         function showSpeed() {
-            var currentTime = Date.now();
-            var timeDifferenceInSeconds = (currentTime - startTime) / 1000;
-            var correctNum = document.querySelectorAll('.correct').length;
-            var errorNum = document.querySelectorAll('.wrong').length;;
-            var total = correctNum + errorNum;
-
-            if (total > 0 && timeDifferenceInSeconds > 0) {
-                var speed = total / timeDifferenceInSeconds * 60;
-                var accuracy = correctNum / total * 100;
-                var promot = "";
-                if (timeDifferenceInSeconds > 10 && speed >= 100 && accuracy > 90) {
-                    promot = "你太棒了，速度超过100了！！！| ";
-                }
-                document.getElementById("statusbar").innerHTML = `${promot}  速度：${speed.toFixed(2)}/分钟 | 正确率：${accuracy.toFixed(2)}% &nbsp;`;
-            }
+            updateStatusBar();
         }
 
         function onePress(event) {
@@ -127,57 +1507,360 @@
                 startTime = Date.now();
             }
 
+            // 先处理功能键（退格键、空格键等）
             if (event.key == "Shift") {
                 return;
             }
 
-            if (event.key == 'Backspace') {
-                if (globalIdx > 1) {
-                    document.getElementById('c' + globalIdx).classList.replace("cursor", "init");
-                    globalIdx = globalIdx - 1;
-                    document.getElementById('c' + globalIdx).classList.replace("correct", "cursor");
-                    document.getElementById('c' + globalIdx).classList.replace("wrong", "cursor");
-                    showSpeed();
-                    return;
-                }
-                else {
-                    return;
-                }
+            // 处理空格键 - 强制提交当前输入
+            if (event.key === ' ') {
+                event.preventDefault(); // 防止页面滚动
+                handleSpaceKey();
+                return;
             }
 
-            // 获取按键的字符
-            var charPressed = event.key;
-            var charx = document.getElementById('c' + globalIdx).innerHTML;
-            if (charPressed == charx) {
-                document.getElementById('c' + globalIdx).classList.replace("cursor", "correct");
+            // 处理退格键 - 在任何字符类型上都能工作
+            if (event.key == 'Backspace') {
+                if (currentInputCode.length > 0) {
+                    // 有输入，删除最后一个字符
+                    currentInputCode = currentInputCode.slice(0, -1);
+                    // 更新状态栏显示当前已输入的编码
+                    updateStatusBar();
+                } else if (globalIdx > 1) {
+                    // 没有输入且不是第一个字符，回到上一个字符
+                    moveToPreviousCharacter();
+                }
+                return;
+            }
+
+            // 检查当前字符
+            var currentChar = contents[globalIdx - 1];
+            
+            // 英文模式：直接匹配字符
+            if (currentMode === 'english') {
+                if (keyMatchesChar(event.key, currentChar.char)) {
+                    markAsCorrect('c' + globalIdx);
+                    moveToNextCharacter();
+                } else {
+                    document.getElementById('c' + globalIdx).classList.replace("cursor", "wrong");
+                    moveToNextCharacter();
+                }
+                return;
+            }
+            
+            // 如果是ASCII字符或标点符号（包括中文标点），直接匹配字符
+            if (isAsciiChar(currentChar.char) || isPunctuationChar(currentChar.char)) {
+                if (keyMatchesChar(event.key, currentChar.char)) {
+                    markAsCorrect('c' + globalIdx);
+                    moveToNextCharacter();
+                } else {
+                    document.getElementById('c' + globalIdx).classList.replace("cursor", "wrong");
+                    moveToNextCharacter();
+                }
+                return;
+            }
+            
+            // 检查当前字符是否有编码，如果没有则跳过
+            if (currentChar.code === "???") {
+                // 没有编码的字符直接跳过
+                markAsCorrect('c' + globalIdx);
+                moveToNextCharacter();
+                return;
+            }
+
+            // 忽略其他功能键
+            if (event.key.length > 1) {
+                return;
+            }
+
+            var charPressed = event.key.toLowerCase();
+            currentInputCode += charPressed;
+            
+            var currentChar = contents[globalIdx - 1];
+            var correctCodes = currentChar.code;
+
+            // 检查是否完全匹配任何编码
+            if (matchesAnyCode(currentInputCode, correctCodes)) {
+                // 匹配到一个编码，检查是否还有更长的编码可能匹配
+                const hasLongerPossible = hasLongerCodePossible(currentInputCode, correctCodes);
+                
+                // 如果输入了4个字符，无论是否有更长编码可能，都立即处理
+                if (currentInputCode.length >= 4) {
+                    // 输入了4个字符且匹配，标记为正确并自动跳转
+                    markAsCorrect('c' + globalIdx);
+                    moveToNextCharacter();
+                    return;
+                }
+                
+                // 如果还有更长的编码可能匹配，继续等待输入
+                if (hasLongerPossible) {
+                    updateStatusBar();
+                    return;
+                }
+                
+                // 没有更长的编码可能匹配，标记为正确
+                markAsCorrect('c' + globalIdx);
+                
+                // 对于短编码（3个或更少字符），需要按空格键跳转
+                if (isShortCode(correctCodes)) {
+                    updateStatusBar();
+                    return;
+                }
+                
+                // 长编码（4个字符），自动跳转
+                moveToNextCharacter();
+                return;
+            }
+
+            // 检查是否还在输入过程中（部分匹配）
+            if (isPrefixOfAnyCode(currentInputCode, correctCodes)) {
+                // 还在输入中，检查是否达到4个字符
+                if (currentInputCode.length >= 4) {
+                    // 输入了4个字符但还不匹配，错误
+                    document.getElementById('c' + globalIdx).classList.replace("cursor", "wrong");
+                    moveToNextCharacter();
+                    return;
+                }
+                // 继续输入
+                updateStatusBar();
+                return;
+            }
+
+            // 输入不匹配任何可能的编码，错误
+            document.getElementById('c' + globalIdx).classList.replace("cursor", "wrong");
+            moveToNextCharacter();
+        }
+
+        function handleSpaceKey() {
+            var currentChar = contents[globalIdx - 1];
+            
+            // 英文模式：空格键直接匹配空格字符
+            if (currentMode === 'english') {
+                if (currentChar.char === ' ') {
+                    markAsCorrect('c' + globalIdx);
+                    moveToNextCharacter();
+                } else {
+                    document.getElementById('c' + globalIdx).classList.replace("cursor", "wrong");
+                    moveToNextCharacter();
+                }
+                return;
+            }
+            
+            // 如果是ASCII字符或标点符号，空格键什么都不做
+            if (isAsciiChar(currentChar.char) || isPunctuationChar(currentChar.char)) {
+                return;
+            }
+            
+            // 检查当前字符是否有编码，如果没有则跳过
+            if (currentChar.code === "???") {
+                // 没有编码的字符直接跳过
+                markAsCorrect('c' + globalIdx);
+                moveToNextCharacter();
+                return;
+            }
+            
+            var correctCodes = currentChar.code;
+            
+            if (matchesAnyCode(currentInputCode, correctCodes)) {
+                // 空格键按下时已经匹配，正确
+                markAsCorrect('c' + globalIdx);
             } else {
+                // 没有匹配（无论是否有输入），错误
                 document.getElementById('c' + globalIdx).classList.replace("cursor", "wrong");
             }
+            
+            moveToNextCharacter();
+        }
 
-            showSpeed();
+        function moveToPreviousCharacter() {
+            // 重置当前输入
+            currentInputCode = "";
+            
+            // 检查是否有上一个字符
+            if (globalIdx <= 1) {
+                return; // 已经是第一个字符，无法回退
+            }
+            
+            // 获取当前字符元素
+            var currentElement = document.getElementById('c' + globalIdx);
+            if (!currentElement) {
+                console.error('无法获取当前字符元素:', 'c' + globalIdx);
+                return;
+            }
+            
+            // 重置当前字符为初始状态
+            currentElement.className = 'init';
+            
+            // 回到上一个字符
+            globalIdx -= 1;
+            
+            // 获取上一个字符元素
+            var prevElement = document.getElementById('c' + globalIdx);
+            if (!prevElement) {
+                console.error('无法获取上一个字符元素:', 'c' + globalIdx);
+                globalIdx += 1; // 恢复索引
+                return;
+            }
+            
+            // 重置上一个字符为光标状态
+            prevElement.className = 'cursor';
+            
+            // 重置字符开始显示的时间
+            characterStartTime = Date.now();
+            
+            // 更新统计信息
+            var correctNum = document.querySelectorAll('.correct').length;
+            var errorNum = document.querySelectorAll('.wrong').length;
+            var total = correctNum + errorNum;
+            
+            // 计算速度
+            var currentTime = Date.now();
+            var timeDifferenceInSeconds = startTime ? (currentTime - startTime) / 1000 : 0;
+            
+            var speedInfo = "";
+            if (total > 0 && timeDifferenceInSeconds > 0) {
+                var speed = total / timeDifferenceInSeconds * 60;
+                var accuracy = correctNum / total * 100;
+                
+                // 儿童友好的鼓励信息
+                var promot = "";
+                if (timeDifferenceInSeconds > 10) {
+                    if (speed >= 80 && accuracy > 95) {
+                        promot = "🎉 太厉害了！你是五笔小天才！ | ";
+                    } else if (speed >= 60 && accuracy > 90) {
+                        promot = "🌟 真棒！继续加油！ | ";
+                    } else if (speed >= 40 && accuracy > 85) {
+                        promot = "👍 不错哦！越来越熟练了！ | ";
+                    } else if (accuracy > 80) {
+                        promot = "💪 加油！你可以做得更好！ | ";
+                    }
+                }
+                
+                speedInfo = `${promot}速度：${speed.toFixed(2)}字/分钟 | 正确率：${accuracy.toFixed(2)}% | 正确：${correctNum} | 错误：${errorNum} | 总字数：${total}`;
+            } else {
+                speedInfo = "🎮 开始打字吧！看看你能得多少分！";
+            }
+            
+            document.getElementById("statusbar").innerHTML = speedInfo;
+            
+            // 更新状态信息
+            updateStatusBar();
+        }
 
-            //alert(document.getElementById('c'+(globalIdx+1)));
+        function moveToNextCharacter() {
+            // 重置当前输入
+            currentInputCode = "";
+            
+            // 检查是否有下一个字符
             if (document.getElementById('c' + (globalIdx + 1))) {
                 globalIdx += 1;
                 document.getElementById('c' + globalIdx).classList.replace("init", "cursor");
-            }
-            else {
-                alert("练习已结束，请重新开始，加油！！！");
-                restart();
+                // 设置当前字符开始显示的时间
+                characterStartTime = Date.now();
+                // 更新状态栏（在globalIdx增加之后）
+                updateStatusBar();
+            } else {
+                // 没有下一个字符，练习结束，显示完成对话框
+                updateStatusBar();
+                showCompletionDialog();
             }
         }
-    </script>
+        
+        // 显示完成对话框
+        function showCompletionDialog() {
+            const dialog = document.getElementById('completionDialog');
+            const dialogContent = dialog.querySelector('.dialog-content');
+            
+            // 计算统计信息
+            var correctNum = document.querySelectorAll('.correct').length;
+            var errorNum = document.querySelectorAll('.wrong').length;
+            var total = correctNum + errorNum;
+            var currentTime = Date.now();
+            var timeDifferenceInSeconds = startTime ? (currentTime - startTime) / 1000 : 0;
+            
+            var speed = 0;
+            var accuracy = 0;
+            
+            if (total > 0 && timeDifferenceInSeconds > 0) {
+                speed = total / timeDifferenceInSeconds * 60;
+                accuracy = correctNum / total * 100;
+            }
+            
+            // 更新对话框内容
+            document.getElementById('dialogSpeed').textContent = speed.toFixed(1);
+            document.getElementById('dialogAccuracy').textContent = accuracy.toFixed(1) + '%';
+            
+            // 根据表现显示不同的鼓励信息
+            var message = "";
+            if (accuracy >= 95 && speed >= 60) {
+                message = "🏆 太厉害了！你是五笔小天才！";
+            } else if (accuracy >= 90 && speed >= 40) {
+                message = "🌟 太棒了！继续保持！";
+            } else if (accuracy >= 80) {
+                message = "👍 做得不错！继续加油！";
+            } else {
+                message = "💪 继续努力，你会越来越好！";
+            }
+            document.getElementById('dialogMessage').textContent = message;
+            
+            // 清空并添加彩色纸屑
+            var existingConfetti = dialogContent.querySelectorAll('.confetti');
+            existingConfetti.forEach(c => c.remove());
+            
+            const colors = ['#4F46E5', '#F97316', '#10B981', '#EF4444', '#818CF8', '#FB923C'];
+            for (var i = 0; i < 20; i++) {
+                var confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
+                dialogContent.appendChild(confetti);
+            }
+            
+            // 显示对话框
+            dialog.classList.add('show');
+        }
+        
+        // 继续下一句
+        async function continueNext() {
+            var dialog = document.getElementById('completionDialog');
+            dialog.classList.remove('show');
+            
+            // 短暂延迟后重新开始
+            setTimeout(async () => {
+                await restart();
+            }, 300);
+        }
+        
+        // 初始化应用
+        async function initApp() {
+            document.getElementById('typingArea').innerHTML = "正在加载数据...";
+            
+            // 从URL读取模式
+            const urlMode = getModeFromURL();
+            if (urlMode) {
+                currentMode = urlMode;
+                console.log(`从URL读取模式: ${currentMode}`);
+            }
+            
+            // 更新按钮样式
+            updateModeButtons();
+            
+            // 更新打字区域样式
+            updateTypingAreaStyle();
+            
+            const loaded = await loadWubiData();
+            if (loaded) {
+                await restart();
+            }
+        }
 
-</head>
-
-<body onkeydown="onePress(event)">
-    <h1 id="title" align="center">小许专用打字练习程序</h1>
-    <div align="center">
-        <div id="typingArea">数据加载中...</div>
-    </div>
-    <div id="statusbar"></div>
-    <script>
-        initLoadData();
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
     </script>
 </body>
 

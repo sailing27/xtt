@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>小许打字</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #AAAAAA;
+        }
+
+        #typingArea,
+        #userInput {
+            font-size: 30px;
+            width: 80%;
+            text-align: left;
+            border-radius: 10px;
+            border: 1px solid #000;
+            padding: 20px;
+            background: #DDDDDD;
+        }
+
+        #typingArea span {
+            left: 10px;
+            top: 50px;
+        }
+
+        #title {
+            color: white;
+        }
+
+        #statusbar {
+            background-color: #000;
+            color: white;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            text-align: right;
+            margin-right: 200px;
+            padding: 10px;
+        }
+
+        .init {
+            line-height: 1.8em;
+        }
+
+        .cursor {
+            background: green;
+            color: white;
+            line-height: 1.8em;
+        }
+
+        .correct {
+            color: green;
+            line-height: 1.8em;
+        }
+
+        .wrong {
+            color: white;
+            background: red;
+            line-height: 1.8em;
+        }
+    </style>
+    <script>
+        const fileCount = 10;
+        let contents = null;
+        let globalIdx = 1;
+        var startTime = null;
+
+        async function initLoadData() {
+            let randomFile = Math.floor(Math.random() * fileCount + 1);
+            try {
+                const response = await fetch(`contents/${randomFile}.txt`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                    
+                }
+
+                const text = await response.text();
+                const lines = text.split('\n').map(str => str.trim());;
+
+                const nonEmptyLines = lines.filter(line => line.trim() !== '');
+                contents = nonEmptyLines;
+                restart();
+            } catch (error) {
+                console.error('read data error:', error);
+                document.getElementById('typingArea').innerHTML = "数据加载失败，请刷新重试。";
+            }
+        }
+
+        function restart() {
+            globalIdx = 1;
+            const randomIndex = Math.floor(Math.random() * contents.length);
+            const textToType = contents[randomIndex];
+
+            var idx = 0;
+            startTime = null;
+            const wrappedText = textToType.split('').map(char => `<span id=\"c${idx = idx + 1}\" class=\"init\">${char}</span>`).join('');
+
+            document.getElementById('typingArea').innerHTML = wrappedText;
+            document.getElementById('c1').classList.replace("init", "cursor");
+            document.getElementById("statusbar").innerHTML = "请开始你的表演！";
+        }
+
+        function showSpeed() {
+            var currentTime = Date.now();
+            var timeDifferenceInSeconds = (currentTime - startTime) / 1000;
+            var correctNum = document.querySelectorAll('.correct').length;
+            var errorNum = document.querySelectorAll('.wrong').length;;
+            var total = correctNum + errorNum;
+
+            if (total > 0 && timeDifferenceInSeconds > 0) {
+                var speed = total / timeDifferenceInSeconds * 60;
+                var accuracy = correctNum / total * 100;
+                var promot = "";
+                if (timeDifferenceInSeconds > 10 && speed >= 100 && accuracy > 90) {
+                    promot = "你太棒了，速度超过100了！！！| ";
+                }
+                document.getElementById("statusbar").innerHTML = `${promot}  速度：${speed.toFixed(2)}/分钟 | 正确率：${accuracy.toFixed(2)}% &nbsp;`;
+            }
+        }
+
+        function onePress(event) {
+            if (!startTime) {
+                startTime = Date.now();
+            }
+
+            if (event.key == "Shift") {
+                return;
+            }
+
+            if (event.key == 'Backspace') {
+                if (globalIdx > 1) {
+                    document.getElementById('c' + globalIdx).classList.replace("cursor", "init");
+                    globalIdx = globalIdx - 1;
+                    document.getElementById('c' + globalIdx).classList.replace("correct", "cursor");
+                    document.getElementById('c' + globalIdx).classList.replace("wrong", "cursor");
+                    showSpeed();
+                    return;
+                }
+                else {
+                    return;
+                }
+            }
+
+            // 获取按键的字符
+            var charPressed = event.key;
+            var charx = document.getElementById('c' + globalIdx).innerHTML;
+            if (charPressed == charx) {
+                document.getElementById('c' + globalIdx).classList.replace("cursor", "correct");
+            } else {
+                document.getElementById('c' + globalIdx).classList.replace("cursor", "wrong");
+            }
+
+            showSpeed();
+
+            //alert(document.getElementById('c'+(globalIdx+1)));
+            if (document.getElementById('c' + (globalIdx + 1))) {
+                globalIdx += 1;
+                document.getElementById('c' + globalIdx).classList.replace("init", "cursor");
+            }
+            else {
+                alert("练习已结束，请重新开始，加油！！！");
+                restart();
+            }
+        }
+    </script>
+
+</head>
+
+<body onkeydown="onePress(event)">
+    <h1 id="title" align="center">小许专用打字练习程序</h1>
+    <div align="center">
+        <div id="typingArea">数据加载中...</div>
+    </div>
+    <div id="statusbar"></div>
+    <script>
+        initLoadData();
+    </script>
+</body>
+
+</html>
