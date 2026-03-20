@@ -71,12 +71,34 @@
             padding: 0 20px;
         }
         
+        #title::before {
+            content: "✨";
+            position: absolute;
+            left: -25px;
+            top: 5px;
+            font-size: 1.5rem;
+            animation: starTwinkle 3s ease-in-out infinite;
+            animation-delay: 0.5s;
+        }
+        
         #title::after {
             content: "✨";
             position: absolute;
             right: -25px;
             top: 5px;
             font-size: 1.5rem;
+            animation: starTwinkle 3s ease-in-out infinite;
+        }
+        
+        @keyframes starTwinkle {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.7;
+                transform: scale(1.1);
+            }
         }
         
         #typingArea {
@@ -102,6 +124,15 @@
             box-shadow: 
                 inset -4px -4px 12px rgba(0, 0, 0, 0.1),
                 8px 8px 24px rgba(79, 70, 229, 0.2);
+        }
+        
+        /* 词组模式样式 - 优化对齐，减少右边空白 */
+        body.phrase-mode #typingArea {
+            text-align: justify;
+            text-justify: inter-character; /* 字符间对齐，适合中文 */
+            hyphens: none; /* 禁用连字符，中文不需要 */
+            word-spacing: 0.5em; /* 增加词间距以帮助两端对齐 */
+            letter-spacing: normal;
         }
         
         /* 英文模式样式 - 和五笔模式保持一致 */
@@ -320,6 +351,28 @@
         }
         
         body.phrase-mode #typingArea .phrase-unit.wrong {
+            background: #EF4444;
+            border-color: white;
+        }
+        
+        body.phrase-mode #typingArea .phrase-unit.wrong .phrase-char {
+            color: white;
+        }
+        
+        body.phrase-mode #typingArea .phrase-unit.cursor .phrase-char {
+            color: white;
+        }
+        
+        body.phrase-mode #typingArea .phrase-unit.correct::before {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: #10B981;
+        }
+        
+        body.phrase-mode #typingArea .phrase-unit.correct .phrase-char {
+            color: #10B981;
+        }
+        
+        body.phrase-mode #typingArea .phrase-unit.wrong::before {
             background: #EF4444;
             border-color: white;
         }
@@ -1906,8 +1959,10 @@
                 return;
             }
             
-            // 如果是ASCII字符或标点符号，空格键什么都不做
+            // 如果是ASCII字符或标点符号，空格键标记为错误并跳过
             if (isAsciiChar(currentChar.char) || isPunctuationChar(currentChar.char)) {
+                document.getElementById('c' + globalIdx).classList.replace("cursor", "wrong");
+                moveToNextCharacter();
                 return;
             }
             
