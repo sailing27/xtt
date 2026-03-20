@@ -1361,20 +1361,22 @@
         
         // 切换练习模式
         function switchMode(mode) {
-            if (mode === currentMode) return;
+            const isSameMode = mode === currentMode;
             
-            currentMode = mode;
+            if (!isSameMode) {
+                currentMode = mode;
+                
+                // 更新URL hash
+                setModeToURL(mode);
+                
+                // 更新按钮样式
+                updateModeButtons();
+                
+                // 更新打字区域样式
+                updateTypingAreaStyle();
+            }
             
-            // 更新URL hash
-            setModeToURL(mode);
-            
-            // 更新按钮样式
-            updateModeButtons();
-            
-            // 更新打字区域样式
-            updateTypingAreaStyle();
-            
-            // 重新开始练习
+            // 总是重新开始练习（切换模式或刷新当前模式）
             restart();
         }
         
