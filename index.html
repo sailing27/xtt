@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>五笔打字练习 - 儿童版</title>
+    <title>小许打字</title>
     <style>
         /* 导入儿童友好字体 */
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&family=Comic+Neue:wght@300;400;700&display=swap');
@@ -84,16 +84,17 @@
         
         #typingArea {
             font-size: 28px;
-            width: 90%;
-            max-width: 1000px;
+            width: 1000px;
+            min-width: 1000px;
             text-align: left;
             padding: 30px;
             margin: 0 auto 10px;
             line-height: 1.8;
-            min-height: 100px;
+            min-height: 200px;
             transition: all 0.3s ease;
-            flex: 1;
+            flex-shrink: 0;
             overflow-y: auto;
+            box-sizing: border-box;
         }
         
         /* 五笔模式样式（单字和词组） */
@@ -309,6 +310,14 @@
         
         /* 烟花效果 - 使用多个粒子 */
         /* 星星飞行动画效果 */
+        .star-animation {
+            position: fixed;
+            font-size: 16px;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 1;
+        }
+        
         @keyframes starFly {
             0% {
                 opacity: 1;
@@ -675,7 +684,7 @@
     </div>
     
     <script>
-        let wubiData = []; // 将从wb86.txt动态加载
+        let wubiData = []; // 将从wb_dict/wb86_single.txt动态加载
         
         // 后备五笔数据，当fetch失败时使用
         const fallbackWubiData = [
@@ -956,8 +965,8 @@
             
             try {
                 // 加载单字数据
-                console.log('Attempting to fetch wb86_single.txt');
-                const singleResponse = await fetch('wb86_single.txt');
+                console.log('Attempting to fetch wb_dict/wb86_single.txt');
+                const singleResponse = await fetch('wb_dict/wb86_single.txt');
                 if (!singleResponse.ok) {
                     throw new Error(`无法加载单字编码文件: ${singleResponse.statusText}`);
                 }
@@ -987,8 +996,8 @@
                 console.log(`成功加载单字数据: ${singleCharData.length} 个字符`);
                 
                 // 加载词组数据
-                console.log('Attempting to fetch wb86_phrase.txt');
-                const phraseResponse = await fetch('wb86_phrase.txt');
+                console.log('Attempting to fetch wb_dict/wb86_phrase.txt');
+                const phraseResponse = await fetch('wb_dict/wb86_phrase.txt');
                 if (!phraseResponse.ok) {
                     console.warn('无法加载词组编码文件，词组练习不可用');
                     phraseData = [];
@@ -1080,7 +1089,7 @@
             }
         }
         
-        // 从contents_wb目录加载随机故事内容
+        // 从contents/zh目录加载随机故事内容
         async function loadRandomStoryContent() {
             // 检查是否通过file://协议访问
             if (window.location.protocol === 'file:') {
@@ -1093,7 +1102,7 @@
                 // 随机选择1-100之间的文件
                 const randomFileNum = Math.floor(Math.random() * 100) + 1;
                 const fileName = randomFileNum.toString().padStart(3, '0') + '.txt';
-                const filePath = `contents_wb/${fileName}`;
+                const filePath = `contents/zh/${fileName}`;
                 
                 console.log(`尝试加载故事文件: ${filePath}`);
                 const response = await fetch(filePath);
@@ -1133,12 +1142,13 @@
             }
             
             try {
-                const fileCount = 10;
+                const fileCount = 100;
                 const randomFile = Math.floor(Math.random() * fileCount) + 1;
-                const response = await fetch(`contents/${randomFile}.txt`);
+                const fileName = randomFile.toString().padStart(3, '0') + '.txt';
+                const response = await fetch(`contents/en/${fileName}`);
                 
                 if (!response.ok) {
-                    throw new Error(`无法加载英文内容文件 ${randomFile}.txt: ${response.statusText}`);
+                    throw new Error(`无法加载英文内容文件 ${fileName}: ${response.statusText}`);
                 }
                 
                 const text = await response.text();
@@ -1176,69 +1186,7 @@
         }
         
         // 创建增强版烟花粒子效果
-        function createFirework(elementId) {
-            const element = document.getElementById(elementId);
-            const rect = element.getBoundingClientRect();
-            
-            // 随机选择烟花样式
-            const fireworkStyles = [
-                { emoji: '✨', colors: ['#FFD700', '#FFA500', '#FF69B4'] },
-                { emoji: '⭐', colors: ['#87CEEB', '#DDA0DD', '#98FB98'] },
-                { emoji: '💫', colors: ['#FF6B6B', '#4ECDC4', '#FFE66D'] },
-                { emoji: '🌟', colors: ['#F7DC6F', '#BB8FCE', '#85C1E9'] },
-                { emoji: '🎇', colors: ['#FF8C00', '#FF4500', '#DC143C'] }
-            ];
-            
-            const style = fireworkStyles[Math.floor(Math.random() * fireworkStyles.length)];
-            const particleCount = 6 + Math.floor(Math.random() * 4); // 6-10个粒子
-            const offsetY = -20; // 向上偏移20px，让烟花远离字符
-            
-            // 创建主烟花
-            const mainFirework = document.createElement('div');
-            mainFirework.textContent = style.emoji;
-            mainFirework.style.cssText = `
-                position: fixed;
-                left: ${rect.left + rect.width / 2}px;
-                top: ${rect.top + offsetY}px;
-                font-size: 18px;
-                z-index: 9999;
-                pointer-events: none;
-                transform: translateX(-50%);
-                animation: fireworkMain 0.6s ease-out forwards;
-            `;
-            document.body.appendChild(mainFirework);
-            
-            // 创建爆炸粒子
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                const angle = (i / particleCount) * 360;
-                const distance = 40 + Math.random() * 40; // 增加距离
-                const color = style.colors[Math.floor(Math.random() * style.colors.length)];
-                const size = 6 + Math.random() * 6; // 稍微减小粒子大小
-                
-                particle.style.cssText = `
-                    position: fixed;
-                    left: ${rect.left + rect.width / 2}px;
-                    top: ${rect.top + offsetY}px;
-                    width: ${size}px;
-                    height: ${size}px;
-                    background: ${color};
-                    border-radius: 50%;
-                    z-index: 9999;
-                    pointer-events: none;
-                    animation: particleExplode${i % 3} 0.5s ease-out forwards;
-                    --angle: ${angle}deg;
-                    --distance: ${distance}px;
-                `;
-                document.body.appendChild(particle);
-                
-                // 移除粒子
-                setTimeout(() => particle.remove(), 500);
-            }
-            
-            // 移除主烟花
-            setTimeout(() => mainFirework.remove(), 600);
-        }
+
         
         // 标记为正确并触发星星飞到状态栏效果
         function markAsCorrect(elementId) {
@@ -1251,15 +1199,9 @@
             // 创建星星元素
             const star = document.createElement('div');
             star.textContent = '⭐';
-            star.style.cssText = `
-                position: fixed;
-                left: ${charRect.left + charRect.width / 2}px;
-                top: ${charRect.top}px;
-                font-size: 16px;
-                z-index: 9999;
-                pointer-events: none;
-                opacity: 1;
-            `;
+            star.className = 'star-animation';
+            star.style.left = `${charRect.left + charRect.width / 2}px`;
+            star.style.top = `${charRect.top}px`;
             document.body.appendChild(star);
             
             // 目标位置：状态栏右下角附近（"正确"数字的位置）
@@ -1327,7 +1269,7 @@
                     }));
                 }
             } else if (currentMode === 'single') {
-                // 单字模式：从contents_wb目录加载随机故事内容
+                // 单字模式：从contents/zh目录加载随机故事内容
                 try {
                     const storyText = await loadRandomStoryContent();
                     
@@ -1380,11 +1322,11 @@
                 let totalChars = 0;
                 
                 for (const phrase of shuffled) {
-                    if (totalChars + phrase.char.length <= 110) { // 目标100字左右，上限110字
+                    if (totalChars + phrase.char.length <= 120) { // 目标100字左右，上限120字
                         selectedPhrases.push(phrase);
                         totalChars += phrase.char.length;
                         
-                        if (totalChars >= 90) { // 至少90字
+                        if (totalChars >= 80) { // 至少80字
                             break;
                         }
                     }
