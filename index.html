@@ -5,9 +5,6 @@
     <meta charset="UTF-8">
     <title>小许打字</title>
     <style>
-        /* 导入儿童友好字体 */
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&family=Comic+Neue:wght@300;400;700&display=swap');
-        
         html, body {
             height: 100%;
             margin: 0;
@@ -16,7 +13,7 @@
         }
         
         body {
-            font-family: 'Comic Neue', cursive;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
             padding: 20px;
             position: relative;
@@ -65,7 +62,7 @@
         #title {
             color: #4F46E5;
             text-align: center;
-            font-family: 'Baloo 2', cursive;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             font-size: 2.5rem;
             margin: 5px 0 10px;
             text-shadow: 2px 2px 0px rgba(129, 140, 248, 0.3);
@@ -114,6 +111,9 @@
             background: rgba(255, 255, 255, 0.95);
             box-shadow: inset -4px -4px 12px rgba(0, 0, 0, 0.1), 8px 8px 24px rgba(79, 70, 229, 0.2);
             font-family: Arial, sans-serif;
+            font-feature-settings: liga 0;
+            -webkit-font-feature-settings: liga 0;
+            font-variant-ligatures: none;
         }
         
         #typingArea::-webkit-scrollbar {
@@ -152,6 +152,14 @@
             box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
             font-weight: 500;
             z-index: 999;
+            min-height: 60px; /* 最小高度 */
+            max-height: 60px; /* 最大高度，防止变大 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            line-height: 1.2; /* 固定行高 */
+            overflow: hidden; /* 隐藏溢出内容 */
         }
         
         #statusInfo::before {
@@ -266,6 +274,58 @@
             color: white;
             background: #EF4444;
             border-color: white;
+        }
+        
+        /* 词组单元样式 - 词组作为整体 */
+        body.phrase-mode #typingArea .phrase-unit {
+            display: inline-block;
+            line-height: 1.8em;
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: 3px solid transparent;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            font-weight: normal;
+            position: relative;
+            font-size: 28px;
+            background: rgba(238, 242, 255, 0.9);
+            border-color: #818CF8;
+        }
+        
+        body.phrase-mode #typingArea .phrase-unit .phrase-char {
+            display: inline;
+            padding: 0;
+            margin: 0;
+            border: none;
+            background: transparent;
+        }
+        
+        body.phrase-mode #typingArea .phrase-unit.cursor {
+            background: #10B981;
+            border-color: white;
+        }
+        
+        body.phrase-mode #typingArea .phrase-unit.cursor .phrase-char {
+            color: white;
+        }
+        
+        body.phrase-mode #typingArea .phrase-unit.correct {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: #10B981;
+        }
+        
+        body.phrase-mode #typingArea .phrase-unit.correct .phrase-char {
+            color: #10B981;
+        }
+        
+        body.phrase-mode #typingArea .phrase-unit.wrong {
+            background: #EF4444;
+            border-color: white;
+        }
+        
+        body.phrase-mode #typingArea .phrase-unit.wrong .phrase-char {
+            color: white;
         }
         
         /* 英文模式字符样式 - 简单干净 */
@@ -404,7 +464,7 @@
         }
         
         .dialog-title {
-            font-family: 'Baloo 2', cursive;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             font-size: 1.4rem;
             color: #fff;
             margin: 0 0 8px 0;
@@ -496,7 +556,7 @@
             border: none;
             padding: 10px 24px;
             font-size: 0.9rem;
-            font-family: 'Baloo 2', cursive;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             border-radius: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -562,7 +622,7 @@
         
         .instructions h3 {
             color: #4F46E5;
-            font-family: 'Baloo 2', cursive;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             margin-top: 0;
             font-size: 1.8rem;
         }
@@ -597,6 +657,10 @@
             #statusInfo {
                 font-size: 22px;
                 padding: 15px;
+                min-height: 55px; /* 最小高度 */
+                max-height: 55px; /* 最大高度 */
+                line-height: 1.2;
+                overflow: hidden;
             }
             
             #statusbar {
@@ -623,6 +687,10 @@
             #statusInfo {
                 font-size: 18px;
                 padding: 12px;
+                min-height: 50px; /* 最小高度 */
+                max-height: 50px; /* 最大高度 */
+                line-height: 1.2;
+                overflow: hidden;
             }
             
             .instructions {
@@ -644,13 +712,13 @@
             <h1 id="title" style="margin: 0;">小许打字</h1>
             
             <div id="practiceMode" style="position: absolute; right: 0; display: inline-flex; gap: 10px;">
-                <button id="englishModeBtn" class="mode-btn active" onclick="switchMode('english')" style="background: linear-gradient(135deg, #4F46E5, #818CF8); color: white; border: none; padding: 8px 16px; border-radius: 12px; font-family: 'Baloo 2', cursive; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease;">
+                <button id="englishModeBtn" class="mode-btn active" onclick="switchMode('english')" style="background: linear-gradient(135deg, #4F46E5, #818CF8); color: white; border: none; padding: 8px 16px; border-radius: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease;">
                     🇬🇧 英文
                 </button>
-                <button id="singleModeBtn" class="mode-btn" onclick="switchMode('single')" style="background: rgba(79, 70, 229, 0.1); color: #4F46E5; border: 2px solid #4F46E5; padding: 8px 16px; border-radius: 12px; font-family: 'Baloo 2', cursive; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease;">
+                <button id="singleModeBtn" class="mode-btn" onclick="switchMode('single')" style="background: rgba(79, 70, 229, 0.1); color: #4F46E5; border: 2px solid #4F46E5; padding: 8px 16px; border-radius: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease;">
                     🎯 单字
                 </button>
-                <button id="phraseModeBtn" class="mode-btn" onclick="switchMode('phrase')" style="background: rgba(79, 70, 229, 0.1); color: #4F46E5; border: 2px solid #4F46E5; padding: 8px 16px; border-radius: 12px; font-family: 'Baloo 2', cursive; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease;">
+                <button id="phraseModeBtn" class="mode-btn" onclick="switchMode('phrase')" style="background: rgba(79, 70, 229, 0.1); color: #4F46E5; border: 2px solid #4F46E5; padding: 8px 16px; border-radius: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease;">
                     📝 词组
                 </button>
             </div>
@@ -845,13 +913,22 @@
             if (charCode >= 91 && charCode <= 96) return true;  // [\]^_`
             if (charCode >= 123 && charCode <= 126) return true; // {|}~
             
+            // Unicode通用标点范围 (U+2000–U+206F)
+            // 包括：— (U+2014, EM DASH), – (U+2013, EN DASH), … (U+2026, HORIZONTAL ELLIPSIS) 等
+            if (charCode >= 0x2000 && charCode <= 0x206F) return true;
+            
             // 中文标点符号范围
             // 中文标点: 。，、；：？！「」『』【】《》（）［］｛｝～·…—‘’""
             if (charCode >= 0x3000 && charCode <= 0x303F) return true; // CJK符号和标点
+            
+            // 检查常见中文标点符号（包括不在CJK范围内的）
+            const chinesePunctuation = "，。、；：？！【】《》（）［］｛｝～·…—'\"";
+            if (chinesePunctuation.includes(char)) return true;
+            
             if (charCode >= 0xFF00 && charCode <= 0xFFEF) {
                 // 全角字符范围，包括全角标点
-                // 检查常见全角标点
-                const fullWidthPunctuation = "，。、；：？！「」『』【】《》（）［］｛｝～·…—‘'\"";
+                // 检查常见全角标点（这里作为额外检查）
+                const fullWidthPunctuation = "，。、；：？！【】《》（）［］｛｝～·…—'\"";
                 return fullWidthPunctuation.includes(char);
             }
             
@@ -861,27 +938,189 @@
             
             return false;
         }
+        
+        // 检查标点符号是否被支持（有键盘映射）
+        function isSupportedPunctuation(char) {
+            // 从mapChinesePunctuationToKey函数中获取支持的标点符号
+            const supportedPunctuation = {
+                "。": true, "，": true, "、": true, "；": true, "：": true, 
+                "？": true, "！": true, "《": true, "》": true, "（": true, 
+                "）": true, "【": true, "】": true, "｛": true, "｝": true
+            };
+            
+            // 如果是支持的标点符号
+            if (supportedPunctuation[char]) {
+                return true;
+            }
+            
+            // 检查ASCII标点符号
+            const charCode = char.charCodeAt(0);
+            if (charCode <= 127) {
+                // ASCII字符，检查是否是常见标点
+                const asciiPunctuation = ".,;:?!<>()[]{}-'\"\\/@#$%&*+=^_`|~";
+                return asciiPunctuation.includes(char);
+            }
+            
+            return false;
+        }
+        
+        // 清理文本，移除不支持的标点符号
+        function cleanText(text) {
+            console.log('cleanText called with text:', text.substring(0, 50) + '...');
+            let result = '';
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                
+                // 处理换行符和回车符
+                if (char === '\n' || char === '\r') {
+                    // 换行符替换为空格（避免连续多个空格）
+                    if (result.length > 0 && result[result.length - 1] !== ' ') {
+                        result += ' ';
+                    }
+                    continue;
+                }
+                
+                // 如果是标点符号，检查是否支持
+                if (isPunctuationChar(char)) {
+                    if (isSupportedPunctuation(char)) {
+                        result += char;
+                    }
+                    // 不支持的标点符号被跳过
+                } else {
+                    result += char;
+                }
+            }
+            console.log('cleanText result:', result.substring(0, 50) + '...');
+            return result;
+        }
+        
+        // 文本长度保护函数，按段落截断
+        function protectTextLength(text, maxWords = 100, maxChars = 300) {
+            console.log('protectTextLength called with text length:', text.length);
+            
+            // 判断文本是中文还是英文
+            const isChinese = /[\u4e00-\u9fff]/.test(text);
+            
+            if (isChinese) {
+                // 中文文本：按字符数限制
+                if (text.length <= maxChars) {
+                    console.log('Chinese text within limit:', text.length, 'chars');
+                    return text;
+                }
+                
+                console.log('Chinese text exceeds limit:', text.length, 'chars, truncating to', maxChars);
+                
+                // 按段落截断：找到合适的段落结束位置
+                let truncated = text.substring(0, maxChars);
+                
+                // 尝试在标点符号处截断
+                const punctuationMarks = ['。', '！', '？', '；', '，', '.', '!', '?', ';', ','];
+                let lastGoodBreak = maxChars;
+                
+                // 从截断点向前找最近的标点符号
+                for (let i = maxChars - 1; i >= Math.max(0, maxChars - 50); i--) {
+                    if (punctuationMarks.includes(text[i])) {
+                        lastGoodBreak = i + 1;
+                        break;
+                    }
+                }
+                
+                // 如果找到了合适的截断点，使用它
+                if (lastGoodBreak < maxChars && lastGoodBreak > maxChars * 0.7) {
+                    truncated = text.substring(0, lastGoodBreak);
+                    console.log('Truncated at punctuation, length:', truncated.length);
+                } else {
+                    // 否则在单词边界截断（中文按字符）
+                    truncated = text.substring(0, maxChars);
+                    console.log('Truncated at character limit, length:', truncated.length);
+                }
+                
+                // 确保截断后的文本以完整句子结束
+                if (!punctuationMarks.some(mark => truncated.endsWith(mark))) {
+                    // 添加省略号表示截断
+                    truncated += '...';
+                }
+                
+                return truncated;
+            } else {
+                // 英文文本：按单词数限制
+                const words = text.split(/\s+/);
+                if (words.length <= maxWords) {
+                    console.log('English text within limit:', words.length, 'words');
+                    return text;
+                }
+                
+                console.log('English text exceeds limit:', words.length, 'words, truncating to', maxWords);
+                
+                // 取前maxWords个单词
+                let truncatedWords = words.slice(0, maxWords);
+                let truncated = truncatedWords.join(' ');
+                
+                // 尝试在句子边界截断
+                const sentenceEndings = ['.', '!', '?', ';'];
+                let lastGoodBreak = truncated.length;
+                
+                // 从截断点向前找最近的句子结束标点
+                for (let i = truncated.length - 1; i >= Math.max(0, truncated.length - 100); i--) {
+                    if (sentenceEndings.includes(truncated[i])) {
+                        lastGoodBreak = i + 1;
+                        break;
+                    }
+                }
+                
+                // 如果找到了合适的截断点，使用它
+                if (lastGoodBreak < truncated.length && lastGoodBreak > truncated.length * 0.7) {
+                    truncated = truncated.substring(0, lastGoodBreak);
+                    console.log('Truncated at sentence end, length:', truncated.length);
+                } else {
+                    // 否则添加省略号
+                    truncated += '...';
+                }
+                
+                return truncated;
+            }
+        }
 
         // 检查输入是否匹配任何编码（支持多个编码用逗号分隔）
         function matchesAnyCode(input, codesStr) {
+            if (!codesStr) {
+                console.warn('matchesAnyCode: codesStr is undefined or empty');
+                return false;
+            }
             const codes = codesStr.split(',');
             return codes.some(code => code.toLowerCase() === input.toLowerCase());
         }
 
         // 检查输入是否是任何编码的前缀（支持多个编码用逗号分隔）
         function isPrefixOfAnyCode(input, codesStr) {
+            if (!codesStr) {
+                console.warn('isPrefixOfAnyCode: codesStr is undefined or empty');
+                return false;
+            }
             const codes = codesStr.split(',');
             return codes.some(code => code.toLowerCase().startsWith(input.toLowerCase()));
         }
         
-        // 检查编码是否是短编码（3个或更少字符）
-        function isShortCode(codesStr) {
+        // 检查当前输入是否匹配短编码（3个或更少字符）
+        function isShortCode(input, codesStr) {
+            if (!codesStr) {
+                console.warn('isShortCode: codesStr is undefined or empty');
+                return false;
+            }
             const codes = codesStr.split(',');
-            return codes.some(code => code.length <= 3);
+            // 检查当前输入是否完全匹配一个长度≤3的编码
+            return codes.some(code => 
+                code.toLowerCase() === input.toLowerCase() && 
+                code.length <= 3
+            );
         }
         
         // 检查是否存在更长的编码可能匹配（用于决定是否继续等待输入）
         function hasLongerCodePossible(input, codesStr) {
+            if (!codesStr) {
+                console.warn('hasLongerCodePossible: codesStr is undefined or empty');
+                return false;
+            }
             const codes = codesStr.split(',');
             // 如果输入已经是某个编码，检查是否还有其他编码比当前输入长且以此输入为前缀
             return codes.some(code => 
@@ -958,8 +1197,20 @@
             if (window.location.protocol === 'file:') {
                 console.log('File protocol detected, using fallback wubi data');
                 singleCharData = fallbackWubiData;
-                phraseData = []; // 文件协议下没有词组数据
-                console.log(`使用后备数据: ${singleCharData.length} 个字符的五笔编码`);
+                // 文件协议下的后备词组数据
+                phraseData = [
+                    { char: '中华人民共和国', code: 'kwwl' },
+                    { char: '中国人民解放军', code: 'klwp' },
+                    { char: '中国共产党', code: 'kiai' },
+                    { char: '全国人民', code: 'wlnw' },
+                    { char: '社会主义', code: 'pwyy' },
+                    { char: '改革开放', code: 'nagy' },
+                    { char: '经济发展', code: 'xina' },
+                    { char: '科学技术', code: 'tirs' },
+                    { char: '文化教育', code: 'ywfy' },
+                    { char: '身体健康', code: 'twwy' }
+                ];
+                console.log(`使用后备数据: ${singleCharData.length} 个字符的五笔编码, ${phraseData.length} 个词组`);
                 return true;
             }
             
@@ -999,11 +1250,21 @@
                 console.log('Attempting to fetch wb_dict/wb86_phrase.txt');
                 const phraseResponse = await fetch('wb_dict/wb86_phrase.txt');
                 if (!phraseResponse.ok) {
-                    console.warn('无法加载词组编码文件，词组练习不可用');
+                    console.warn(`无法加载词组编码文件: ${phraseResponse.status} ${phraseResponse.statusText}，词组练习不可用`);
                     phraseData = [];
                 } else {
                     const phraseText = await phraseResponse.text();
+                    console.log(`词组文件加载成功，大小: ${phraseText.length} 字符`);
                     const phraseLines = phraseText.split('\n').filter(line => line.trim() !== '');
+                    console.log(`词组文件行数: ${phraseLines.length}`);
+                    
+                    // 显示前几行用于调试
+                    if (phraseLines.length > 0) {
+                        console.log('前5行样例:');
+                        for (let i = 0; i < Math.min(5, phraseLines.length); i++) {
+                            console.log(`  ${i+1}: ${phraseLines[i]}`);
+                        }
+                    }
                     
                     phraseData = phraseLines.map(line => {
                         const parts = line.split(' ');
@@ -1011,11 +1272,16 @@
                             const code = parts[0];
                             const phrase = parts.slice(1).join(' ');
                             return { char: phrase, code: code };
+                        } else {
+                            console.warn(`词组文件行格式错误: "${line}"`);
+                            return null;
                         }
-                        return null;
                     }).filter(item => item !== null);
                     
                     console.log(`成功加载词组数据: ${phraseData.length} 个词组`);
+                    if (phraseData.length > 0) {
+                        console.log(`第一个词组: "${phraseData[0].char}" 编码: ${phraseData[0].code}`);
+                    }
                 }
                 
                 return true;
@@ -1081,11 +1347,11 @@
             } else if (currentMode === 'single') {
                 body.classList.add('wubi-mode');
                 typingArea.classList.add('wubi-mode');
-                typingArea.style.fontFamily = "'Baloo 2', cursive";
+                typingArea.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
             } else if (currentMode === 'phrase') {
                 body.classList.add('phrase-mode');
                 typingArea.classList.add('phrase-mode');
-                typingArea.style.fontFamily = "'Baloo 2', cursive";
+                typingArea.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
             }
         }
         
@@ -1093,9 +1359,10 @@
         async function loadRandomStoryContent() {
             // 检查是否通过file://协议访问
             if (window.location.protocol === 'file:') {
-                console.log('File protocol detected, using fallback story content');
-                // 返回后备故事内容
-                return "小丽帮妈妈洗碗，擦得干干净净。看到了漂亮的月亮。可是慢慢地玩玩具。看到了神奇的小鱼。因此认真地玩太阳。";
+                console.log('File protocol detected, using simple test content');
+                // 返回简单的测试内容
+                const testContent = "我是一名程序员，每天都在学习新的技术。中国的互联网行业发展非常迅速。学习五笔打字可以提高工作效率。";
+                return cleanText(testContent);
             }
             
             try {
@@ -1112,12 +1379,15 @@
                 }
                 
                 const storyText = await response.text();
-                console.log(`成功加载故事内容: ${storyText.length} 个字符`);
-                return storyText.trim();
+                // 清理文本：移除换行符和不支持的标点符号
+                const cleanedText = cleanText(storyText);
+                // 应用长度保护：中文限制在300字左右（maxWords参数对中文无效）
+                const protectedText = protectTextLength(cleanedText, 100, 300);
+                console.log(`成功加载故事内容: ${storyText.length} 个字符 -> 清理后: ${cleanedText.length} 个字符 -> 保护后: ${protectedText.length} 个字符`);
+                return protectedText;
             } catch (error) {
                 console.error('加载故事内容失败:', error);
-                // 返回后备故事内容
-                return "小丽帮妈妈洗碗，擦得干干净净。看到了漂亮的月亮。可是慢慢地玩玩具。看到了神奇的小鱼。因此认真地玩太阳。";
+                throw new Error(`加载中文内容失败: ${error.message}`);
             }
         }
         
@@ -1125,20 +1395,10 @@
         async function loadEnglishContent() {
             // 检查是否通过file://协议访问
             if (window.location.protocol === 'file:') {
-                console.log('File protocol detected, using fallback english content');
-                // 返回后备英文内容
-                return [
-                    "The quick brown fox jumps over the lazy dog.",
-                    "Practice makes perfect when learning to type.",
-                    "Typing speed improves with consistent practice.",
-                    "Every day is a new opportunity to learn.",
-                    "Technology helps us connect with the world.",
-                    "Learning new skills keeps our minds active.",
-                    "Patience and persistence lead to success.",
-                    "Reading books expands our knowledge.",
-                    "Writing helps organize our thoughts clearly.",
-                    "Communication is key in every relationship."
-                ];
+                console.log('File protocol detected, using simple test content');
+                // 返回简单的测试内容
+                const testContent = "The quick brown fox jumps over the lazy dog. Practice makes perfect when learning to type. Typing speed improves with consistent practice.";
+                return cleanText(testContent);
             }
             
             try {
@@ -1152,27 +1412,15 @@
                 }
                 
                 const text = await response.text();
-                const lines = text.split('\n')
-                    .map(line => line.trim())
-                    .filter(line => line.trim() !== '');
-                
-                console.log(`成功加载英文内容: ${lines.length} 行`);
-                return lines;
+                // 清理文本：移除换行符和不支持的标点符号（换行符替换为空格）
+                const cleanedText = cleanText(text);
+                // 应用长度保护：英文限制在100个单词左右
+                const protectedText = protectTextLength(cleanedText, 100, 300);
+                console.log(`成功加载英文内容: ${text.length} 个字符 -> 清理后: ${cleanedText.length} 个字符 -> 保护后: ${protectedText.length} 个字符`);
+                return protectedText;
             } catch (error) {
-                console.error('加载英文内容失败，使用后备内容:', error);
-                // 返回后备英文内容
-                return [
-                    "The quick brown fox jumps over the lazy dog.",
-                    "Practice makes perfect when learning to type.",
-                    "Typing speed improves with consistent practice.",
-                    "Every day is a new opportunity to learn.",
-                    "Technology helps us connect with the world.",
-                    "Learning new skills keeps our minds active.",
-                    "Patience and persistence lead to success.",
-                    "Reading books expands our knowledge.",
-                    "Writing helps organize our thoughts clearly.",
-                    "Communication is key in every relationship."
-                ];
+                console.error('加载英文内容失败:', error);
+                throw new Error(`加载英文内容失败: ${error.message}`);
             }
         }
 
@@ -1222,6 +1470,38 @@
             }, 800);
         }
 
+        // 处理文本，返回字符数组（已移除换行符）
+        function processText(text, currentData, isEnglishMode = false) {
+            const result = [];
+            
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                
+                // 跳过换行符和回车符（已经在加载时移除，这里作为额外保护）
+                if (char === '\n' || char === '\r') {
+                    continue;
+                }
+                
+                if (isEnglishMode) {
+                    result.push({
+                        char: char,
+                        code: "???",
+                        id: i + 1  // 使用1-based索引
+                    });
+                } else {
+                    // 查找字符对应的五笔编码
+                    const wubiItem = currentData.find(item => item.char === char);
+                    result.push({
+                        char: char,
+                        code: wubiItem ? wubiItem.code : "???",
+                        id: i + 1  // 使用1-based索引
+                    });
+                }
+            }
+            
+            return result;
+        }
+        
         async function restart() {
             // 防止重复调用
             if (isRestarting) {
@@ -1241,73 +1521,32 @@
             if (currentMode === 'english') {
                 // 英文模式：加载英文练习内容
                 try {
-                    englishContents = await loadEnglishContent();
+                    const englishText = await loadEnglishContent();
                     
-                    // 随机选择一句英文
-                    const randomIndex = Math.floor(Math.random() * englishContents.length);
-                    const englishText = englishContents[randomIndex];
+                    // 处理文本
+                    contents = processText(englishText, currentData, true);
                     
-                    // 将英文文本转换为字符数组（英文没有编码）
-                    contents = englishText.split('').map(char => ({
-                        char: char,
-                        code: "???" // 英文没有五笔编码
-                    }));
-                    
-                    console.log(`英文模式: 加载了 "${englishText}"`);
+                    console.log(`英文模式: 加载了 ${contents.length} 个字符`);
                 } catch (error) {
-                    console.error('加载英文内容失败，使用后备内容:', error);
-                    // 使用后备英文内容
-                    const backupEnglish = [
-                        "The quick brown fox jumps over the lazy dog.",
-                        "Practice makes perfect when learning to type.",
-                        "Typing speed improves with consistent practice."
-                    ];
-                    const randomText = backupEnglish[Math.floor(Math.random() * backupEnglish.length)];
-                    contents = randomText.split('').map(char => ({
-                        char: char,
-                        code: "???"
-                    }));
+                    console.error('加载英文内容失败:', error);
+                    showErrorDialog(`英文内容加载失败: ${error.message}`);
+                    isRestarting = false;
+                    return;
                 }
             } else if (currentMode === 'single') {
                 // 单字模式：从contents/zh目录加载随机故事内容
                 try {
                     const storyText = await loadRandomStoryContent();
                     
-                    // 将故事文本转换为字符数组
-                    contents = storyText.split('').map(char => {
-                        // 查找字符对应的五笔编码
-                        const wubiItem = currentData.find(item => item.char === char);
-                        return {
-                            char: char,
-                            code: wubiItem ? wubiItem.code : "???" // 如果没有找到编码，用???代替
-                        };
-                    });
+                    // 处理文本
+                    contents = processText(storyText, currentData, false);
                     
                     console.log(`单字模式: 加载了 ${contents.length} 个字符的故事内容`);
                 } catch (error) {
-                    console.error('加载故事内容失败，使用后备句子:', error);
-                    // 使用后备句子
-                    const sentences = [
-                        "我是一名程序员，每天都在学习新的技术。",
-                        "中国的互联网行业发展非常迅速。",
-                        "学习五笔打字可以提高工作效率。",
-                        "今天天气很好，适合出去散步。",
-                        "人工智能正在改变我们的生活方式。",
-                        "读书可以开阔我们的视野和思维。",
-                        "健康的生活方式包括运动和饮食。",
-                        "科技的发展让生活更加便利。",
-                        "教育是改变命运的重要途径。",
-                        "环境保护是我们每个人的责任。"
-                    ];
-                    
-                    const randomSentence = sentences[Math.floor(Math.random() * sentences.length)];
-                    contents = randomSentence.split('').map(char => {
-                        const wubiItem = currentData.find(item => item.char === char);
-                        return {
-                            char: char,
-                            code: wubiItem ? wubiItem.code : "???"
-                        };
-                    });
+                    console.error('加载故事内容失败:', error);
+                    showErrorDialog(`中文内容加载失败: ${error.message}`);
+                    isRestarting = false;
+                    return;
                 }
             } else {
                 // 词组模式：随机选择词组，总共约100个字符
@@ -1340,30 +1579,56 @@
                 
                 console.log(`词组模式: 选择了 ${selectedPhrases.length} 个词组，共 ${totalChars} 个字符`);
                 
-                // 将词组转换为内容数组
-                contents = selectedPhrases.map(item => ({
-                    char: item.char,
-                    code: item.code
-                }));
+                // 将词组作为整体添加到内容数组
+                contents = [];
+                let phraseId = 0;
+                for (const item of selectedPhrases) {
+                    // 清理词组中的标点符号
+                    const cleanedPhrase = cleanText(item.char);
+                    if (cleanedPhrase.length === 0) continue;
+                    
+                    phraseId++;
+                    contents.push({
+                        char: cleanedPhrase,
+                        code: item.code, // 使用词组的编码
+                        id: phraseId,
+                        isPhrase: true
+                    });
+                }
             }
             
-            var idx = 0;
-            const wrappedText = contents.map(item => {
-                idx++;
-                return `<span id="c${idx}" class="init">${item.char}</span>`;
-            }).join('');
+            // 生成HTML内容
+            let wrappedText = '';
+            
+            for (const item of contents) {
+                if (item.isPhrase) {
+                    // 词组作为整体显示，每个字符包装在span中，但整个词组是一个单元
+                    let phraseHtml = '';
+                    for (let i = 0; i < item.char.length; i++) {
+                        phraseHtml += `<span class="phrase-char">${item.char[i]}</span>`;
+                    }
+                    wrappedText += `<span id="c${item.id}" class="init phrase-unit">${phraseHtml}</span> `;
+                } else {
+                    wrappedText += `<span id="c${item.id}" class="init">${item.char}</span>`;
+                }
+            }
 
             document.getElementById('typingArea').innerHTML = wrappedText;
-            document.getElementById('c1').classList.replace("init", "cursor");
-            // 设置第一个字符开始显示的时间
-            characterStartTime = Date.now();
+            
+            // 设置第一个字符的光标
+            if (contents.length > 0) {
+                document.getElementById('c1').classList.replace("init", "cursor");
+                // 设置第一个字符开始显示的时间
+                characterStartTime = Date.now();
+            }
+            
             updateStatusBar();
             } catch (error) {
                 console.error('重启练习时出错:', error);
                 if (error.message.includes('词组数据加载失败')) {
-                    document.getElementById('typingArea').innerHTML = "词组数据加载失败，请切换到单字模式。";
+                    showErrorDialog('词组数据加载失败，请切换到单字模式。');
                 } else {
-                    document.getElementById('typingArea').innerHTML = "加载练习内容失败，请刷新页面重试。";
+                    showErrorDialog(`加载练习内容失败: ${error.message}`);
                 }
             } finally {
                 isRestarting = false;
@@ -1376,7 +1641,11 @@
                 var debugInfo = "";
                 
                 // 调试信息：显示当前字符索引和字符
-                var debugPrefix = `[${globalIdx}/${contents.length}] ${currentChar.char}: `;
+                var displayText = currentChar.char;
+                if (currentChar.isPhrase && currentChar.char.length > 10) {
+                    displayText = currentChar.char.substring(0, 10) + '...';
+                }
+                var debugPrefix = `[${globalIdx}/${contents.length}] ${displayText}: `;
                 
                 // 英文模式：显示英文练习提示
                 if (currentMode === 'english') {
@@ -1425,14 +1694,27 @@
                     }
                     // 其他字符（中文汉字等），显示五笔编码
                     else {
-                        // 检查是否已匹配短编码
-                        const isMatched = matchesAnyCode(currentInputCode, currentChar.code);
-                        const isShort = isShortCode(currentChar.code);
-                        
-                        if (isMatched && isShort) {
-                            debugInfo = debugPrefix + `编码: ${currentChar.code} ✓ 已匹配 | 按空格键继续`;
+                        // 检查是否是词组
+                        if (currentChar.isPhrase) {
+                            // 词组模式
+                            const isMatched = matchesAnyCode(currentInputCode, currentChar.code);
+                            const isShort = isShortCode(currentInputCode, currentChar.code);
+                            
+                            if (isMatched && isShort) {
+                                debugInfo = debugPrefix + `词组编码: ${currentChar.code} ✓ 已匹配 | 按空格键继续`;
+                            } else {
+                                debugInfo = debugPrefix + `词组编码: ${currentChar.code} | 已输入: ${currentInputCode}`;
+                            }
                         } else {
-                            debugInfo = debugPrefix + `编码: ${currentChar.code} | 已输入: ${currentInputCode}`;
+                            // 单字模式
+                            const isMatched = matchesAnyCode(currentInputCode, currentChar.code);
+                            const isShort = isShortCode(currentInputCode, currentChar.code);
+                            
+                            if (isMatched && isShort) {
+                                debugInfo = debugPrefix + `${currentChar.code} ✓ | 按空格继续`;
+                            } else {
+                                debugInfo = debugPrefix + `${currentChar.code} | 输入: ${currentInputCode}`;
+                            }
                         }
                     }
                 }
@@ -1559,10 +1841,11 @@
 
             // 检查是否完全匹配任何编码
             if (matchesAnyCode(currentInputCode, correctCodes)) {
-                // 匹配到一个编码，检查是否还有更长的编码可能匹配
-                const hasLongerPossible = hasLongerCodePossible(currentInputCode, correctCodes);
+                // 调试日志：匹配成功
+                console.log('DEBUG: 匹配成功 - 输入:', currentInputCode, '编码:', correctCodes, '字符:', currentChar.char);
                 
-                // 如果输入了4个字符，无论是否有更长编码可能，都立即处理
+                // 根据用户要求：只有输满4个字符，或者输入空格时，才进行判断
+                // 所以即使匹配成功，如果不到4个字符，也要等待空格键
                 if (currentInputCode.length >= 4) {
                     // 输入了4个字符且匹配，标记为正确并自动跳转
                     markAsCorrect('c' + globalIdx);
@@ -1570,28 +1853,16 @@
                     return;
                 }
                 
-                // 如果还有更长的编码可能匹配，继续等待输入
-                if (hasLongerPossible) {
-                    updateStatusBar();
-                    return;
-                }
-                
-                // 没有更长的编码可能匹配，标记为正确
-                markAsCorrect('c' + globalIdx);
-                
-                // 对于短编码（3个或更少字符），需要按空格键跳转
-                if (isShortCode(correctCodes)) {
-                    updateStatusBar();
-                    return;
-                }
-                
-                // 长编码（4个字符），自动跳转
-                moveToNextCharacter();
+                // 不到4个字符，即使匹配了也要等待空格键
+                console.log('DEBUG: 等待空格键 - 已匹配但不到4个字符');
+                updateStatusBar();
                 return;
             }
 
             // 检查是否还在输入过程中（部分匹配）
             if (isPrefixOfAnyCode(currentInputCode, correctCodes)) {
+                console.log('DEBUG: 部分匹配 - 输入:', currentInputCode, '编码:', correctCodes);
+                
                 // 还在输入中，检查是否达到4个字符
                 if (currentInputCode.length >= 4) {
                     // 输入了4个字符但还不匹配，错误
@@ -1604,12 +1875,23 @@
                 return;
             }
 
-            // 输入不匹配任何可能的编码，错误
-            document.getElementById('c' + globalIdx).classList.replace("cursor", "wrong");
-            moveToNextCharacter();
+            // 输入不匹配任何可能的编码
+            console.log('DEBUG: 不匹配任何编码 - 输入:', currentInputCode, '编码:', correctCodes);
+            
+            // 检查是否达到4个字符
+            if (currentInputCode.length >= 4) {
+                // 输入了4个字符但不匹配任何编码，错误
+                document.getElementById('c' + globalIdx).classList.replace("cursor", "wrong");
+                moveToNextCharacter();
+                return;
+            }
+            
+            // 还没达到4个字符，继续等待输入（不管对错，等输满4个字符或按空格）
+            updateStatusBar();
         }
 
         function handleSpaceKey() {
+            console.log('DEBUG: 空格键按下 - currentInputCode:', currentInputCode, 'globalIdx:', globalIdx);
             var currentChar = contents[globalIdx - 1];
             
             // 英文模式：空格键直接匹配空格字符
@@ -1667,7 +1949,11 @@
             }
             
             // 重置当前字符为初始状态
-            currentElement.className = 'init';
+            if (currentElement.classList.contains('phrase-unit')) {
+                currentElement.className = 'init phrase-unit';
+            } else {
+                currentElement.className = 'init';
+            }
             
             // 回到上一个字符
             globalIdx -= 1;
@@ -1681,7 +1967,11 @@
             }
             
             // 重置上一个字符为光标状态
-            prevElement.className = 'cursor';
+            if (prevElement.classList.contains('phrase-unit')) {
+                prevElement.className = 'cursor phrase-unit';
+            } else {
+                prevElement.className = 'cursor';
+            }
             
             // 重置字符开始显示的时间
             characterStartTime = Date.now();
@@ -1730,12 +2020,12 @@
             currentInputCode = "";
             
             // 检查是否有下一个字符
-            if (document.getElementById('c' + (globalIdx + 1))) {
+            if (globalIdx < contents.length) {
                 globalIdx += 1;
                 document.getElementById('c' + globalIdx).classList.replace("init", "cursor");
                 // 设置当前字符开始显示的时间
                 characterStartTime = Date.now();
-                // 更新状态栏（在globalIdx增加之后）
+                // 更新状态栏
                 updateStatusBar();
             } else {
                 // 没有下一个字符，练习结束，显示完成对话框
@@ -1748,6 +2038,9 @@
         function showCompletionDialog() {
             const dialog = document.getElementById('completionDialog');
             const dialogContent = dialog.querySelector('.dialog-content');
+            
+            // 确保对话框处于完成状态（不是错误状态）
+            restoreCompletionDialog();
             
             // 计算统计信息
             var correctNum = document.querySelectorAll('.correct').length;
@@ -1809,6 +2102,53 @@
             setTimeout(async () => {
                 await restart();
             }, 300);
+        }
+        
+        // 显示错误对话框
+        function showErrorDialog(errorMessage) {
+            const dialog = document.getElementById('completionDialog');
+            const dialogContent = dialog.querySelector('.dialog-content');
+            
+            // 更新对话框内容为错误信息
+            dialog.querySelector('.dialog-emoji').textContent = '❌';
+            dialog.querySelector('.dialog-title').textContent = '加载失败';
+            dialog.querySelector('.dialog-message').textContent = errorMessage;
+            
+            // 隐藏统计信息
+            dialog.querySelector('.dialog-stats').style.display = 'none';
+            
+            // 更新按钮文本和事件
+            const button = dialog.querySelector('.dialog-btn');
+            button.textContent = '重试';
+            button.onclick = function() {
+                dialog.classList.remove('show');
+                setTimeout(async () => {
+                    await restart();
+                }, 300);
+            };
+            
+            // 清空并添加简单的装饰
+            var existingConfetti = dialogContent.querySelectorAll('.confetti');
+            existingConfetti.forEach(c => c.remove());
+            
+            // 显示对话框
+            dialog.classList.add('show');
+        }
+        
+        // 恢复完成对话框的正常状态
+        function restoreCompletionDialog() {
+            const dialog = document.getElementById('completionDialog');
+            const dialogContent = dialog.querySelector('.dialog-content');
+            
+            // 恢复对话框内容
+            dialog.querySelector('.dialog-emoji').textContent = '🎉';
+            dialog.querySelector('.dialog-title').textContent = '太棒了！';
+            dialog.querySelector('.dialog-stats').style.display = 'flex';
+            
+            // 恢复按钮文本和事件
+            const button = dialog.querySelector('.dialog-btn');
+            button.textContent = '继续下一句 →';
+            button.onclick = continueNext;
         }
         
         // 初始化应用
