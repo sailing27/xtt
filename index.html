@@ -172,19 +172,10 @@
             font-size: 20px;
         }
         
-        /* 五笔模式状态栏 */
-        body.wubi-mode #statusbar {
+        /* 统一状态栏样式 - 所有模式使用五笔单字模式效果 */
+        #statusbar {
             background: linear-gradient(90deg, #F97316, #FB923C);
             color: white;
-        }
-        
-        /* 英文模式状态栏 - 简单黑色 */
-        body.english-mode #statusbar {
-            background-color: #000;
-            color: white;
-            text-align: right;
-            padding-right: 200px;
-        }
             font-weight: bold;
             box-shadow: 0 -4px 20px rgba(249, 115, 22, 0.3);
             z-index: 1000;
@@ -317,60 +308,16 @@
 
         
         /* 烟花效果 - 使用多个粒子 */
-        .correct.firework::before {
-            content: "🎆";
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px;
-            animation: firework 0.8s ease-out forwards;
-            pointer-events: none;
-            z-index: 100;
-        }
-        
-        @keyframes firework {
+        /* 星星飞行动画效果 */
+        @keyframes starFly {
             0% {
                 opacity: 1;
-                transform: translateX(-50%) translateY(0) scale(0.5);
-            }
-            50% {
-                opacity: 1;
-                transform: translateX(-50%) translateY(-30px) scale(1.2);
+                transform: translate(0, 0) scale(1);
             }
             100% {
                 opacity: 0;
-                transform: translateX(-50%) translateY(-50px) scale(1.5);
+                transform: translate(var(--target-x), var(--target-y)) scale(0.5);
             }
-        }
-        
-        /* 随机颜色的小烟花粒子 */
-        .correct.firework-1::before { animation: firework1 0.6s ease-out forwards; }
-        .correct.firework-2::before { animation: firework2 0.6s ease-out forwards; }
-        .correct.firework-3::before { animation: firework3 0.6s ease-out forwards; }
-        
-        @keyframes firework1 {
-            0% { opacity: 1; transform: translateX(-50%) translateY(0) scale(0); content: "✨"; }
-            30% { opacity: 1; transform: translateX(-80%) translateY(-20px) scale(1); }
-            100% { opacity: 0; transform: translateX(-120%) translateY(-40px) scale(0.5); content: "✨"; }
-        }
-        
-        @keyframes firework2 {
-            0% { opacity: 1; transform: translateX(-50%) translateY(0) scale(0); content: "⭐"; }
-            30% { opacity: 1; transform: translateX(-50%) translateY(-25px) scale(1.2); }
-            100% { opacity: 0; transform: translateX(-50%) translateY(-50px) scale(0.8); content: "⭐"; }
-        }
-        
-        @keyframes firework3 {
-            0% { opacity: 1; transform: translateX(-50%) translateY(0) scale(0); content: "💫"; }
-            30% { opacity: 1; transform: translateX(-20%) translateY(-20px) scale(1); }
-            100% { opacity: 0; transform: translateX(20%) translateY(-40px) scale(0.5); content: "💫"; }
-        }
-        
-        @keyframes popIn {
-            0% { transform: translateX(-50%) scale(0); }
-            70% { transform: translateX(-50%) scale(1.3); }
-            100% { transform: translateX(-50%) scale(1); }
         }
         
 
@@ -1228,19 +1175,108 @@
             return arr;
         }
         
-        // 标记为正确并触发烟花效果
+        // 创建增强版烟花粒子效果
+        function createFirework(elementId) {
+            const element = document.getElementById(elementId);
+            const rect = element.getBoundingClientRect();
+            
+            // 随机选择烟花样式
+            const fireworkStyles = [
+                { emoji: '✨', colors: ['#FFD700', '#FFA500', '#FF69B4'] },
+                { emoji: '⭐', colors: ['#87CEEB', '#DDA0DD', '#98FB98'] },
+                { emoji: '💫', colors: ['#FF6B6B', '#4ECDC4', '#FFE66D'] },
+                { emoji: '🌟', colors: ['#F7DC6F', '#BB8FCE', '#85C1E9'] },
+                { emoji: '🎇', colors: ['#FF8C00', '#FF4500', '#DC143C'] }
+            ];
+            
+            const style = fireworkStyles[Math.floor(Math.random() * fireworkStyles.length)];
+            const particleCount = 6 + Math.floor(Math.random() * 4); // 6-10个粒子
+            const offsetY = -20; // 向上偏移20px，让烟花远离字符
+            
+            // 创建主烟花
+            const mainFirework = document.createElement('div');
+            mainFirework.textContent = style.emoji;
+            mainFirework.style.cssText = `
+                position: fixed;
+                left: ${rect.left + rect.width / 2}px;
+                top: ${rect.top + offsetY}px;
+                font-size: 18px;
+                z-index: 9999;
+                pointer-events: none;
+                transform: translateX(-50%);
+                animation: fireworkMain 0.6s ease-out forwards;
+            `;
+            document.body.appendChild(mainFirework);
+            
+            // 创建爆炸粒子
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                const angle = (i / particleCount) * 360;
+                const distance = 40 + Math.random() * 40; // 增加距离
+                const color = style.colors[Math.floor(Math.random() * style.colors.length)];
+                const size = 6 + Math.random() * 6; // 稍微减小粒子大小
+                
+                particle.style.cssText = `
+                    position: fixed;
+                    left: ${rect.left + rect.width / 2}px;
+                    top: ${rect.top + offsetY}px;
+                    width: ${size}px;
+                    height: ${size}px;
+                    background: ${color};
+                    border-radius: 50%;
+                    z-index: 9999;
+                    pointer-events: none;
+                    animation: particleExplode${i % 3} 0.5s ease-out forwards;
+                    --angle: ${angle}deg;
+                    --distance: ${distance}px;
+                `;
+                document.body.appendChild(particle);
+                
+                // 移除粒子
+                setTimeout(() => particle.remove(), 500);
+            }
+            
+            // 移除主烟花
+            setTimeout(() => mainFirework.remove(), 600);
+        }
+        
+        // 标记为正确并触发星星飞到状态栏效果
         function markAsCorrect(elementId) {
             const element = document.getElementById(elementId);
             element.classList.replace("cursor", "correct");
             
-            // 随机添加烟花效果
-            const fireworkClasses = ['firework-1', 'firework-2', 'firework-3'];
-            const randomClass = fireworkClasses[Math.floor(Math.random() * fireworkClasses.length)];
-            element.classList.add('firework', randomClass);
+            // 获取字符位置
+            const charRect = element.getBoundingClientRect();
             
-            // 动画结束后移除烟花类
+            // 创建星星元素
+            const star = document.createElement('div');
+            star.textContent = '⭐';
+            star.style.cssText = `
+                position: fixed;
+                left: ${charRect.left + charRect.width / 2}px;
+                top: ${charRect.top}px;
+                font-size: 16px;
+                z-index: 9999;
+                pointer-events: none;
+                opacity: 1;
+            `;
+            document.body.appendChild(star);
+            
+            // 目标位置：状态栏右下角附近（"正确"数字的位置）
+            const statusbar = document.getElementById('statusbar');
+            const statusRect = statusbar.getBoundingClientRect();
+            // 状态栏右侧区域（"正确"数字所在位置）
+            const targetX = statusRect.left + statusRect.width * 0.75;
+            const targetY = statusRect.top - 5;
+            
+            // 设置动画
+            star.style.setProperty('--target-x', `${targetX - (charRect.left + charRect.width / 2)}px`);
+            star.style.setProperty('--target-y', `${targetY - charRect.top}px`);
+            star.style.animation = 'starFly 0.8s ease-out forwards';
+            
+            // 动画结束后移除星星
             setTimeout(() => {
-                element.classList.remove('firework', randomClass);
+                star.remove();
             }, 800);
         }
 
