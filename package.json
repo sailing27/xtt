@@ -1,0 +1,27 @@
+{
+  "name": "xtt-typing-practice",
+  "version": "1.0.0",
+  "description": "小许打字练习应用 - 对比测试脚本",
+  "main": "index.html",
+  "scripts": {
+    "test:compare": "node .sisyphus/scripts/compare-test.js",
+    "test:quick": "node .sisyphus/scripts/compare-test.js --quick",
+    "install:playwright": "npx playwright install chromium",
+    "prepare": "npm run install:playwright"
+  },
+  "keywords": [
+    "typing",
+    "practice",
+    "wubi",
+    "testing",
+    "playwright"
+  ],
+  "author": "XTT Development Team",
+  "license": "MIT",
+  "devDependencies": {
+    "playwright": "^1.40.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
