@@ -103,8 +103,8 @@
         
         #typingArea {
             font-size: 28px;
-            width: 80%;
-            max-width: 1000px;
+            width: 85%;
+            max-width: 1100px;
             text-align: left;
             padding: 30px;
             margin: 0 auto 10px;
@@ -172,8 +172,8 @@
             color: white;
             padding: 15px 20px;
             border-radius: 16px;
-            width: 80%;
-            max-width: 1000px;
+            width: 85%;
+            max-width: 1100px;
             position: fixed;
             bottom: 70px; /* 在状态栏上方 */
             left: 50%;
@@ -1624,7 +1624,7 @@ const TYPING_CONTENTS = {"en/001":"The summer I turned twelve, the old lighthous
                     // 儿童友好的鼓励信息
                     if (timeDifferenceInSeconds > 10) {
                         if (speed >= 80 && accuracy > 95) {
-                            promot = currentMode === 'english' ? "🎉 太厉害了！你是英文打字小天才！ | " : "🎉 太厉害了！你是五笔小天才！ | ";
+                            promot = "🎉 太厉害了！你打字高手！ | ";
                         } else if (speed >= 60 && accuracy > 90) {
                             promot = "🌟 真棒！继续加油！ | ";
                         } else if (speed >= 40 && accuracy > 85) {
@@ -1883,7 +1883,7 @@ const TYPING_CONTENTS = {"en/001":"The summer I turned twelve, the old lighthous
                 var promot = "";
                 if (timeDifferenceInSeconds > 10) {
                     if (speed >= 80 && accuracy > 95) {
-                        promot = "🎉 太厉害了！你是五笔小天才！ | ";
+                        promot = "🎉 太厉害了！你打字高手！ | ";
                     } else if (speed >= 60 && accuracy > 90) {
                         promot = "🌟 真棒！继续加油！ | ";
                     } else if (speed >= 40 && accuracy > 85) {
@@ -1953,7 +1953,7 @@ const TYPING_CONTENTS = {"en/001":"The summer I turned twelve, the old lighthous
             // 根据表现显示不同的鼓励信息
             var message = "";
             if (accuracy >= 95 && speed >= 60) {
-                message = "🏆 太厉害了！你是五笔小天才！";
+                message = "🏆 太厉害了！你打字高手！";
             } else if (accuracy >= 90 && speed >= 40) {
                 message = "🌟 太棒了！继续保持！";
             } else if (accuracy >= 80) {
