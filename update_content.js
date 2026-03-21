@@ -6,6 +6,82 @@ const path = require('path');
 const CONTENTS_DIR = 'contents';
 const OUTPUT_HTML = 'all_in_one.html';
 
+// 文本长度保护函数，按段落截断
+function protectTextLength(text, maxWords = 80, maxChars = 255) {
+    // 判断文本是中文还是英文
+    const isChinese = /[\u4e00-\u9fff]/.test(text);
+    
+    if (isChinese) {
+        // 中文文本：按字符数限制
+        if (text.length <= maxChars) {
+            return text;
+        }
+        
+        // 按段落截断：找到合适的段落结束位置
+        let truncated = text.substring(0, maxChars);
+        
+        // 尝试在标点符号处截断
+        const punctuationMarks = ['。', '！', '？', '；', '，', '.', '!', '?', ';', ','];
+        let lastGoodBreak = maxChars;
+        
+        // 从截断点向前找最近的标点符号
+        for (let i = maxChars - 1; i >= Math.max(0, maxChars - 50); i--) {
+            if (punctuationMarks.includes(text[i])) {
+                lastGoodBreak = i + 1;
+                break;
+            }
+        }
+        
+        // 如果找到了合适的截断点，使用它
+        if (lastGoodBreak < maxChars && lastGoodBreak > maxChars * 0.7) {
+            truncated = text.substring(0, lastGoodBreak);
+        } else {
+            // 否则在单词边界截断（中文按字符）
+            truncated = text.substring(0, maxChars);
+        }
+        
+        // 确保截断后的文本以完整句子结束
+        if (!punctuationMarks.some(mark => truncated.endsWith(mark))) {
+            // 添加句号表示截断（中文）
+            truncated += '。';
+        }
+        
+        return truncated;
+    } else {
+        // 英文文本：按单词数限制
+        const words = text.split(/\s+/);
+        if (words.length <= maxWords) {
+            return text;
+        }
+        
+        // 取前maxWords个单词
+        let truncatedWords = words.slice(0, maxWords);
+        let truncated = truncatedWords.join(' ');
+        
+        // 尝试在句子边界截断
+        const sentenceEndings = ['.', '!', '?', ';'];
+        let lastGoodBreak = truncated.length;
+        
+        // 从截断点向前找最近的句子结束标点
+        for (let i = truncated.length - 1; i >= Math.max(0, truncated.length - 100); i--) {
+            if (sentenceEndings.includes(truncated[i])) {
+                lastGoodBreak = i + 1;
+                break;
+            }
+        }
+        
+        // 如果找到了合适的截断点，使用它
+        if (lastGoodBreak < truncated.length && lastGoodBreak > truncated.length * 0.7) {
+            truncated = truncated.substring(0, lastGoodBreak);
+        } else {
+            // 否则添加句号表示截断（英文）
+            truncated += '.';
+        }
+        
+        return truncated;
+    }
+}
+
 function scanContentFiles() {
     const contentData = {};
     
@@ -20,7 +96,11 @@ function scanContentFiles() {
                 scanDir(fullPath, key + '/');
             } else if (entry.name.endsWith('.txt')) {
                 const content = fs.readFileSync(fullPath, 'utf8');
-                contentData[key] = content.replace(/\n/g, ' ').trim();
+                // 清理文本：移除换行符
+                const cleanedText = content.replace(/\n/g, ' ').trim();
+                // 应用长度保护：英文限制在80个单词左右，中文限制在255字左右
+                const protectedText = protectTextLength(cleanedText, 80, 255);
+                contentData[key] = protectedText;
             }
         }
     }
@@ -95,4 +175,4 @@ if (require.main === module) {
     main();
 }
 
-module.exports = { scanContentFiles, updateHtmlFile };
+module.exports = { scanContentFiles, updateHtmlFile, protectTextLength };

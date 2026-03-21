@@ -103,8 +103,8 @@
         
         #typingArea {
             font-size: 28px;
-            width: 1000px;
-            min-width: 1000px;
+            width: 90%;
+            max-width: 1200px;
             text-align: left;
             padding: 30px;
             margin: 0 auto 10px;
@@ -173,16 +173,10 @@
             padding: 15px 20px;
             border-radius: 16px;
             width: 90%;
-            max-width: 1000px;
-            margin: 0 auto 10px;
+            max-width: 1200px;
+            margin: 10px auto;
             text-align: center;
-            position: fixed;
-            bottom: 70px;
-            left: 50%;
-            transform: translateX(-50%);
-            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
             font-weight: 500;
-            z-index: 999;
             min-height: 60px; /* 最小高度 */
             max-height: 60px; /* 最大高度，防止变大 */
             display: flex;
@@ -191,6 +185,7 @@
             box-sizing: border-box;
             line-height: 1.2; /* 固定行高 */
             overflow: hidden; /* 隐藏溢出内容 */
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
         }
         
         #statusInfo::before {
@@ -210,6 +205,8 @@
             text-align: center;
             padding: 15px;
             font-size: 20px;
+            box-sizing: border-box;
+            border-radius: 0;
         }
         
         /* 统一状态栏样式 - 所有模式使用五笔单字模式效果 */
@@ -777,9 +774,7 @@
             </div>
         </div>
         
-        <div align="center">
-            <div id="typingArea">数据加载中...</div>
-        </div>
+        <div id="typingArea">数据加载中...</div>
         <div id="statusInfo"></div>
         <div id="statusbar"></div>
     </div>
@@ -951,7 +946,7 @@
         }
         
         // 文本长度保护函数，按段落截断
-        function protectTextLength(text, maxWords = 100, maxChars = 300) {
+        function protectTextLength(text, maxWords = 80, maxChars = 255) {
             console.log('protectTextLength called with text length:', text.length);
             
             // 判断文本是中文还是英文
@@ -993,8 +988,8 @@
                 
                 // 确保截断后的文本以完整句子结束
                 if (!punctuationMarks.some(mark => truncated.endsWith(mark))) {
-                    // 添加省略号表示截断
-                    truncated += '...';
+                    // 添加句号表示截断（中文）
+                    truncated += '。';
                 }
                 
                 return truncated;
@@ -1029,8 +1024,8 @@
                     truncated = truncated.substring(0, lastGoodBreak);
                     console.log('Truncated at sentence end, length:', truncated.length);
                 } else {
-                    // 否则添加省略号
-                    truncated += '...';
+                    // 否则添加句号表示截断（英文）
+                    truncated += '.';
                 }
                 
                 return truncated;
@@ -1309,8 +1304,8 @@
                 const storyText = await response.text();
                 // 清理文本：移除换行符和不支持的标点符号
                 const cleanedText = cleanText(storyText);
-                // 应用长度保护：中文限制在300字左右（maxWords参数对中文无效）
-                const protectedText = protectTextLength(cleanedText, 100, 300);
+                // 应用长度保护：中文限制在255字左右（maxWords参数对中文无效）
+                const protectedText = protectTextLength(cleanedText, 80, 255);
                 console.log(`成功加载故事内容: ${storyText.length} 个字符 -> 清理后: ${cleanedText.length} 个字符 -> 保护后: ${protectedText.length} 个字符`);
                 return protectedText;
             } catch (error) {
@@ -1342,8 +1337,8 @@
                 const text = await response.text();
                 // 清理文本：移除换行符和不支持的标点符号（换行符替换为空格）
                 const cleanedText = cleanText(text);
-                // 应用长度保护：英文限制在100个单词左右
-                const protectedText = protectTextLength(cleanedText, 100, 300);
+                // 应用长度保护：英文限制在80个单词左右
+                const protectedText = protectTextLength(cleanedText, 80, 255);
                 console.log(`成功加载英文内容: ${text.length} 个字符 -> 清理后: ${cleanedText.length} 个字符 -> 保护后: ${protectedText.length} 个字符`);
                 return protectedText;
             } catch (error) {
