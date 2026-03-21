@@ -807,104 +807,7 @@
     <script>
         let wubiData = []; // 将从wb_dict/wb86_single.txt动态加载
         
-        // 后备五笔数据，当fetch失败时使用
-        const fallbackWubiData = [
-            { char: '我', code: 'q' },
-            { char: '是', code: 'j' },
-            { char: '一', code: 'g' },
-            { char: '名', code: 'qk' },
-            { char: '程', code: 'tkgg' },
-            { char: '序', code: 'ycb' },
-            { char: '员', code: 'km' },
-            { char: '每', code: 'txg' },
-            { char: '天', code: 'gd' },
-            { char: '都', code: 'ftjb,dnj' },
-            { char: '在', code: 'd' },
-            { char: '学', code: 'ip' },
-            { char: '习', code: 'nu' },
-            { char: '新', code: 'usr,usrn' },
-            { char: '的', code: 'r' },
-            { char: '技', code: 'rfc' },
-            { char: '术', code: 'sy' },
-            { char: '。', code: 'yyy' },
-            { char: '，', code: 'yyy' },
-            { char: '中', code: 'k' },
-            { char: '国', code: 'l,lg' },
-            { char: '互', code: 'gx' },
-            { char: '联', code: 'bu' },
-            { char: '网', code: 'mqq' },
-            { char: '行', code: 'tf' },
-            { char: '业', code: 'og' },
-            { char: '发', code: 'v' },
-            { char: '展', code: 'na' },
-            { char: '非', code: 'djd' },
-            { char: '常', code: 'ipkh' },
-            { char: '迅', code: 'nfp' },
-            { char: '速', code: 'gkip' },
-            { char: '打', code: 'rs' },
-            { char: '字', code: 'pb' },
-            { char: '可', code: 'sk' },
-            { char: '以', code: 'c' },
-            { char: '提', code: 'rj' },
-            { char: '高', code: 'ym' },
-            { char: '工', code: 'a' },
-            { char: '作', code: 'wt' },
-            { char: '效', code: 'uqt' },
-            { char: '率', code: 'yx' },
-            { char: '今', code: 'wynb' },
-            { char: '气', code: 'rtg' },
-            { char: '很', code: 'tve' },
-            { char: '好', code: 'vb' },
-            { char: '适', code: 'tdp' },
-            { char: '合', code: 'wgk' },
-            { char: '出', code: 'bm' },
-            { char: '去', code: 'fcu' },
-            { char: '散', code: 'aet' },
-            { char: '步', code: 'hi' },
-            { char: '人', code: 'w' },
-            { char: '工', code: 'a' },
-            { char: '智', code: 'tdkj' },
-            { char: '能', code: 'ce' },
-            { char: '正', code: 'ghd' },
-            { char: '在', code: 'd' },
-            { char: '改', code: 'nty' },
-            { char: '变', code: 'yo' },
-            { char: '们', code: 'wu' },
-            { char: '生', code: 'tg' },
-            { char: '活', code: 'itd' },
-            { char: '方', code: 'yy' },
-            { char: '式', code: 'aa' },
-            { char: '读', code: 'yfn' },
-            { char: '书', code: 'nnh' },
-            { char: '开', code: 'ga' },
-            { char: '阔', code: 'uit' },
-            { char: '视', code: 'pym' },
-            { char: '野', code: 'jfc' },
-            { char: '和', code: 't' },
-            { char: '思', code: 'ln' },
-            { char: '维', code: 'xwy' },
-            { char: '健', code: 'wvf' },
-            { char: '康', code: 'yvi' },
-            { char: '包', code: 'qn' },
-            { char: '括', code: 'rtd' },
-            { char: '运', code: 'fcp' },
-            { char: '动', code: 'fcl' },
-            { char: '饮', code: 'qnq' },
-            { char: '食', code: 'wyv' },
-            { char: '科', code: 'tu' },
-            { char: '让', code: 'yh' },
-            { char: '加', code: 'lk' },
-            { char: '更', code: 'gjq' },
-            { char: '利', code: 'tjh' },
-            { char: '教', code: 'ftbt' },
-            { char: '育', code: 'yce' },
-            { char: '命', code: 'wgkb' },
-            { char: '运', code: 'fcp' },
-            { char: '重', code: 'tgj' },
-            { char: '要', code: 's' },
-            { char: '途', code: 'wgp' },
-            { char: '径', code: 'tca' }
-        ];
+
 
         let contents = [];
         let globalIdx = 1;
@@ -1246,106 +1149,76 @@
         
         // 加载五笔编码数据
         async function loadWubiData() {
-            // 检查是否通过file://协议访问
-            if (window.location.protocol === 'file:') {
-                console.log('File protocol detected, using fallback wubi data');
-                singleCharData = fallbackWubiData;
-                // 文件协议下的后备词组数据
-                phraseData = [
-                    { char: '中华人民共和国', code: 'kwwl' },
-                    { char: '中国人民解放军', code: 'klwp' },
-                    { char: '中国共产党', code: 'kiai' },
-                    { char: '全国人民', code: 'wlnw' },
-                    { char: '社会主义', code: 'pwyy' },
-                    { char: '改革开放', code: 'nagy' },
-                    { char: '经济发展', code: 'xina' },
-                    { char: '科学技术', code: 'tirs' },
-                    { char: '文化教育', code: 'ywfy' },
-                    { char: '身体健康', code: 'twwy' }
-                ];
-                console.log(`使用后备数据: ${singleCharData.length} 个字符的五笔编码, ${phraseData.length} 个词组`);
-                return true;
+            // 加载单字数据
+            console.log('Attempting to fetch wb_dict/wb86_single.txt');
+            const singleResponse = await fetch('wb_dict/wb86_single.txt');
+            if (!singleResponse.ok) {
+                throw new Error(`无法加载单字编码文件: ${singleResponse.statusText}`);
             }
             
-            try {
-                // 加载单字数据
-                console.log('Attempting to fetch wb_dict/wb86_single.txt');
-                const singleResponse = await fetch('wb_dict/wb86_single.txt');
-                if (!singleResponse.ok) {
-                    throw new Error(`无法加载单字编码文件: ${singleResponse.statusText}`);
+            const singleText = await singleResponse.text();
+            const singleLines = singleText.split('\n').filter(line => line.trim() !== '');
+            
+            const singleCharToCodeMap = new Map();
+            singleLines.forEach(line => {
+                const parts = line.split(' ');
+                if (parts.length >= 2) {
+                    const code = parts[0];
+                    const char = parts[1];
+                    
+                    if (singleCharToCodeMap.has(char)) {
+                        const existingCode = singleCharToCodeMap.get(char);
+                        if (!existingCode.includes(code)) {
+                            singleCharToCodeMap.set(char, `${existingCode},${code}`);
+                        }
+                    } else {
+                        singleCharToCodeMap.set(char, code);
+                    }
+                }
+            });
+            
+            singleCharData = Array.from(singleCharToCodeMap.entries()).map(([char, code]) => ({ char, code }));
+            console.log(`成功加载单字数据: ${singleCharData.length} 个字符`);
+            
+            // 加载词组数据
+            console.log('Attempting to fetch wb_dict/wb86_phrase.txt');
+            const phraseResponse = await fetch('wb_dict/wb86_phrase.txt');
+            if (!phraseResponse.ok) {
+                console.warn(`无法加载词组编码文件: ${phraseResponse.status} ${phraseResponse.statusText}，词组练习不可用`);
+                phraseData = [];
+            } else {
+                const phraseText = await phraseResponse.text();
+                console.log(`词组文件加载成功，大小: ${phraseText.length} 字符`);
+                const phraseLines = phraseText.split('\n').filter(line => line.trim() !== '');
+                console.log(`词组文件行数: ${phraseLines.length}`);
+                
+                // 显示前几行用于调试
+                if (phraseLines.length > 0) {
+                    console.log('前5行样例:');
+                    for (let i = 0; i < Math.min(5, phraseLines.length); i++) {
+                        console.log(`  ${i+1}: ${phraseLines[i]}`);
+                    }
                 }
                 
-                const singleText = await singleResponse.text();
-                const singleLines = singleText.split('\n').filter(line => line.trim() !== '');
-                
-                const singleCharToCodeMap = new Map();
-                singleLines.forEach(line => {
+                phraseData = phraseLines.map(line => {
                     const parts = line.split(' ');
                     if (parts.length >= 2) {
                         const code = parts[0];
-                        const char = parts[1];
-                        
-                        if (singleCharToCodeMap.has(char)) {
-                            const existingCode = singleCharToCodeMap.get(char);
-                            if (!existingCode.includes(code)) {
-                                singleCharToCodeMap.set(char, `${existingCode},${code}`);
-                            }
-                        } else {
-                            singleCharToCodeMap.set(char, code);
-                        }
+                        const phrase = parts.slice(1).join(' ');
+                        return { char: phrase, code: code };
+                    } else {
+                        console.warn(`词组文件行格式错误: "${line}"`);
+                        return null;
                     }
-                });
+                }).filter(item => item !== null);
                 
-                singleCharData = Array.from(singleCharToCodeMap.entries()).map(([char, code]) => ({ char, code }));
-                console.log(`成功加载单字数据: ${singleCharData.length} 个字符`);
-                
-                // 加载词组数据
-                console.log('Attempting to fetch wb_dict/wb86_phrase.txt');
-                const phraseResponse = await fetch('wb_dict/wb86_phrase.txt');
-                if (!phraseResponse.ok) {
-                    console.warn(`无法加载词组编码文件: ${phraseResponse.status} ${phraseResponse.statusText}，词组练习不可用`);
-                    phraseData = [];
-                } else {
-                    const phraseText = await phraseResponse.text();
-                    console.log(`词组文件加载成功，大小: ${phraseText.length} 字符`);
-                    const phraseLines = phraseText.split('\n').filter(line => line.trim() !== '');
-                    console.log(`词组文件行数: ${phraseLines.length}`);
-                    
-                    // 显示前几行用于调试
-                    if (phraseLines.length > 0) {
-                        console.log('前5行样例:');
-                        for (let i = 0; i < Math.min(5, phraseLines.length); i++) {
-                            console.log(`  ${i+1}: ${phraseLines[i]}`);
-                        }
-                    }
-                    
-                    phraseData = phraseLines.map(line => {
-                        const parts = line.split(' ');
-                        if (parts.length >= 2) {
-                            const code = parts[0];
-                            const phrase = parts.slice(1).join(' ');
-                            return { char: phrase, code: code };
-                        } else {
-                            console.warn(`词组文件行格式错误: "${line}"`);
-                            return null;
-                        }
-                    }).filter(item => item !== null);
-                    
-                    console.log(`成功加载词组数据: ${phraseData.length} 个词组`);
-                    if (phraseData.length > 0) {
-                        console.log(`第一个词组: "${phraseData[0].char}" 编码: ${phraseData[0].code}`);
-                    }
+                console.log(`成功加载词组数据: ${phraseData.length} 个词组`);
+                if (phraseData.length > 0) {
+                    console.log(`第一个词组: "${phraseData[0].char}" 编码: ${phraseData[0].code}`);
                 }
-                
-                return true;
-            } catch (error) {
-                console.error('加载五笔编码数据失败，使用后备数据:', error);
-                // 使用后备数据
-                singleCharData = fallbackWubiData;
-                phraseData = [];
-                console.log(`使用后备数据: ${singleCharData.length} 个字符的五笔编码`);
-                return true; // 返回true，因为后备数据可用
             }
+            
+            return true;
         }
         
         // 获取当前模式的数据
@@ -2225,9 +2098,20 @@
             // 更新打字区域样式
             updateTypingAreaStyle();
             
-            const loaded = await loadWubiData();
-            if (loaded) {
-                await restart();
+            try {
+                const loaded = await loadWubiData();
+                if (loaded) {
+                    await restart();
+                }
+            } catch (error) {
+                console.error('加载五笔数据失败:', error);
+                document.getElementById('typingArea').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #dc2626;">
+                        <h3 style="margin-bottom: 20px;">❌ 数据加载失败</h3>
+                        <p style="margin-bottom: 10px;">${error.message}</p>
+                        <p style="font-size: 14px; color: #6b7280;">请检查数据文件或刷新页面重试</p>
+                    </div>
+                `;
             }
         }
 
