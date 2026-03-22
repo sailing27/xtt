@@ -2035,10 +2035,11 @@
             // 显示对话框
             dialog.classList.add('show');
 
-            // 移除按钮焦点，防止空格键触发按钮点击
+            // 禁用按钮交互，防止空格键或点击触发
             const continueBtn = dialog.querySelector('.dialog-btn');
             if (continueBtn) {
                 continueBtn.blur();
+                continueBtn.style.pointerEvents = 'none';
             }
         }
 
@@ -2050,6 +2051,13 @@
             }
             
             var dialog = document.getElementById('completionDialog');
+            
+            // 重新启用按钮交互
+            const continueBtn = dialog.querySelector('.dialog-btn');
+            if (continueBtn) {
+                continueBtn.style.pointerEvents = 'auto';
+            }
+            
             dialog.classList.remove('show');
             
             // 短暂延迟后重新开始
