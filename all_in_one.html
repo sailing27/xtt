@@ -130,6 +130,7 @@
         body.phrase-mode #typingArea {
             text-align: justify;
             text-justify: inter-character; /* 字符间对齐，适合中文 */
+            text-align-last: justify; /* 最后一行也两端对齐 */
             hyphens: none; /* 禁用连字符，中文不需要 */
             word-spacing: 0.5em; /* 增加词间距以帮助两端对齐 */
             letter-spacing: normal;
@@ -803,7 +804,7 @@ const TYPING_CONTENTS = {"en/001":"The summer I turned twelve, the old lighthous
                 </div>
             </div>
             <p class="dialog-message" id="dialogMessage">你做得真棒！继续加油！</p>
-            <button class="dialog-btn" onclick="continueNext()">继续下一句 →</button>
+            <button class="dialog-btn" onclick="continueNext()">继续练习</button>
         </div>
     </div>
     
@@ -817,6 +818,7 @@ const TYPING_CONTENTS = {"en/001":"The summer I turned twelve, the old lighthous
         var startTime = null;
         var currentInputCode = "";
         var characterStartTime = null; // 当前字符开始显示的时间
+        let isCompleted = false; // 打字是否完成（用于阻止完成后的键盘事件）
 
         // 将中文标点映射到对应的英文按键
         function mapChinesePunctuationToKey(chinesePunct) {
@@ -1650,6 +1652,11 @@ const TYPING_CONTENTS = {"en/001":"The summer I turned twelve, the old lighthous
         }
 
         function onePress(event) {
+            // 如果打字已完成，不再处理键盘事件
+            if (isCompleted) {
+                return;
+            }
+            
             if (!startTime) {
                 startTime = Date.now();
             }
@@ -1778,6 +1785,11 @@ const TYPING_CONTENTS = {"en/001":"The summer I turned twelve, the old lighthous
         }
 
         function handleSpaceKey() {
+            // 如果打字已完成，不再处理键盘事件
+            if (isCompleted) {
+                return;
+            }
+
             console.log('DEBUG: 空格键按下 - currentInputCode:', currentInputCode, 'globalIdx:', globalIdx);
             var currentChar = contents[globalIdx - 1];
             
@@ -1925,6 +1937,8 @@ const TYPING_CONTENTS = {"en/001":"The summer I turned twelve, the old lighthous
         
         // 显示完成对话框
         function showCompletionDialog() {
+            isCompleted = true; // 标记打字已完成，阻止后续键盘事件
+            
             const dialog = document.getElementById('completionDialog');
             const dialogContent = dialog.querySelector('.dialog-content');
             
@@ -1980,15 +1994,23 @@ const TYPING_CONTENTS = {"en/001":"The summer I turned twelve, the old lighthous
             
             // 显示对话框
             dialog.classList.add('show');
+
+            // 移除按钮焦点，防止空格键触发按钮点击
+            const continueBtn = dialog.querySelector('.dialog-btn');
+            if (continueBtn) {
+                continueBtn.blur();
+            }
         }
-        
-        // 继续下一句
+
+        // 继续练习
         async function continueNext() {
             var dialog = document.getElementById('completionDialog');
             dialog.classList.remove('show');
             
             // 短暂延迟后重新开始
             setTimeout(async () => {
+                // 在 restart 执行前重置完成标志，允许键盘事件处理
+                isCompleted = false;
                 await restart();
             }, 300);
         }
@@ -2036,7 +2058,7 @@ const TYPING_CONTENTS = {"en/001":"The summer I turned twelve, the old lighthous
             
             // 恢复按钮文本和事件
             const button = dialog.querySelector('.dialog-btn');
-            button.textContent = '继续下一句 →';
+            button.textContent = '继续练习';
             button.onclick = continueNext;
         }
         
