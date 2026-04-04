@@ -94,6 +94,19 @@
             font-weight: bold;
             font-family: 'WubiRoot', sans-serif;
             margin-bottom: 10px;
+            height: 150px;
+            line-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .radical-char.level1-code {
+            color: #4F46E5;
+        }
+
+        .radical-char.error {
+            color: #EF4444;
         }
 
         .radical-name {
@@ -265,6 +278,32 @@
             color: #fff;
         }
 
+        .key.hide-radicals .key-radicals-wrapper {
+            display: none;
+        }
+
+        .key.hide-radicals .key-footer {
+            justify-content: center;
+        }
+
+        .key.hide-radicals .key-letter {
+            margin-left: 0;
+        }
+
+        /* 难度4时，字母键只显示字母，居中 */
+        .key.level4-letter {
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            font-weight: bold;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .key.level4-letter .key-radicals-wrapper,
+        .key.level4-letter .key-footer {
+            display: none;
+        }
+
         @keyframes success {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.2); }
@@ -404,6 +443,39 @@
         let wrongCount = 0;
         let startTime = null;
 
+        // 难度级别定义
+        const DIFFICULTY_LEVELS = 4;
+        let currentDifficulty = 1;
+
+        // 一级简码：一地在要工、上是中国同、和的有人我、主产不为这、民了发以经
+        const level1Codes = {
+            'g': '一',
+            'f': '地', 
+            'd': '在',
+            's': '要',
+            'a': '工',
+            'h': '上',
+            'j': '是',
+            'k': '中',
+            'l': '国',
+            'm': '同',
+            't': '和',
+            'r': '的',
+            'e': '有',
+            'w': '人',
+            'q': '我',
+            'y': '主',
+            'u': '产',
+            'i': '不',
+            'o': '为',
+            'p': '这',
+            'n': '民',
+            'b': '了',
+            'v': '发',
+            'c': '以',
+            'x': '经'
+        };
+
         function generateKeyboard() {
             const keyboard = document.getElementById('keyboard');
             keyboard.innerHTML = '';
@@ -425,68 +497,101 @@
                     keyDiv.setAttribute('data-key', key);
 
                     if (keyData.hasRadicals) {
-                        // 字母键（包括Z键）
-                        keyDiv.classList.add('has-radicals');
-                        
-                        // 外层包裹器（居中）
-                        const wrapperDiv = document.createElement('div');
-                        wrapperDiv.className = 'key-radicals-wrapper';
-                        
-                        // 内层字根容器（左对齐）
-                        const radicalsDiv = document.createElement('div');
-                        radicalsDiv.className = 'key-radicals';
-                        
-                        if (data && data.radicals.length > 0) {
-                            // 有字根的键（Q-Y, A-M）
-                            data.radicals.forEach(radical => {
-                                const span = document.createElement('span');
-                                span.className = 'radical-item';
-                                span.innerHTML = renderRadical(radical);
-                                radicalsDiv.appendChild(span);
+                        // 级别四：只显示字母，和英文模式一样
+                        if (currentDifficulty === 4) {
+                            keyDiv.classList.add('level4-letter');
+                            keyDiv.textContent = key.toUpperCase();
+                            
+                            keyDiv.addEventListener('click', function() {
+                                if (key === currentKey) {
+                                    correctCount++;
+                                    this.classList.add('success');
+                                    setTimeout(() => {
+                                        this.classList.remove('success');
+                                        nextRadical();
+                                    }, 300);
+                                } else {
+                                    wrongCount++;
+                                    this.style.background = '#EF4444';
+                                    setTimeout(() => {
+                                        this.style.background = '';
+                                    }, 300);
+                                }
+                                updateStats();
+                            });
+                        } else {
+                            // 字母键（包括Z键）- 级别1-3显示字根
+                            keyDiv.classList.add('has-radicals');
+                            
+                            // 级别四：隐藏字根
+                            if (currentDifficulty === 4) {
+                                keyDiv.classList.add('hide-radicals');
+                            }
+                            
+                            // 外层包裹器（居中）
+                            const wrapperDiv = document.createElement('div');
+                            wrapperDiv.className = 'key-radicals-wrapper';
+                            
+                            // 内层字根容器（左对齐）
+                            const radicalsDiv = document.createElement('div');
+                            radicalsDiv.className = 'key-radicals';
+                            
+                            if (data && data.radicals.length > 0) {
+                                // 有字根的键（Q-Y, A-M）
+                                data.radicals.forEach(radical => {
+                                    const span = document.createElement('span');
+                                    span.className = 'radical-item';
+                                    span.innerHTML = renderRadical(radical);
+                                    radicalsDiv.appendChild(span);
+                                });
+                            }
+                            
+                            wrapperDiv.appendChild(radicalsDiv);
+                            keyDiv.appendChild(wrapperDiv);
+                            
+                            // 底部显示字母和首字（Z键只有字母）
+                            const footerDiv = document.createElement('div');
+                            footerDiv.className = 'key-footer';
+
+                            if (data && data.first) {
+                                const firstDiv = document.createElement('span');
+                                firstDiv.className = 'key-first';
+                                firstDiv.textContent = data.first;
+                                footerDiv.appendChild(firstDiv);
+                            }
+
+                            const letterDiv = document.createElement('span');
+                            letterDiv.className = 'key-letter';
+                            letterDiv.textContent = key.toUpperCase();
+                            footerDiv.appendChild(letterDiv);
+
+                            keyDiv.appendChild(footerDiv);
+
+                            keyDiv.addEventListener('click', function() {
+                                if (key === currentKey) {
+                                    correctCount++;
+                                    this.classList.add('success');
+                                    setTimeout(() => {
+                                        this.classList.remove('success');
+                                        nextRadical();
+                                    }, 300);
+                                } else {
+                                    wrongCount++;
+                                    this.style.background = '#EF4444';
+                                    setTimeout(() => {
+                                        this.style.background = '';
+                                    }, 300);
+                                }
+                                updateStats();
                             });
                         }
-                        
-                        wrapperDiv.appendChild(radicalsDiv);
-                        keyDiv.appendChild(wrapperDiv);
-                        
-                        // 底部显示字母和首字（Z键只有字母）
-                        const footerDiv = document.createElement('div');
-                        footerDiv.className = 'key-footer';
-
-                        if (data && data.first) {
-                            const firstDiv = document.createElement('span');
-                            firstDiv.className = 'key-first';
-                            firstDiv.textContent = data.first;
-                            footerDiv.appendChild(firstDiv);
-                        }
-
-                        const letterDiv = document.createElement('span');
-                        letterDiv.className = 'key-letter';
-                        letterDiv.textContent = key.toUpperCase();
-                        footerDiv.appendChild(letterDiv);
-
-                        keyDiv.appendChild(footerDiv);
-
-                        keyDiv.addEventListener('click', function() {
-                            if (key === currentKey) {
-                                correctCount++;
-                                this.classList.add('success');
-                                setTimeout(() => {
-                                    this.classList.remove('success');
-                                    nextRadical();
-                                }, 300);
-                            } else {
-                                wrongCount++;
-                                this.style.background = '#EF4444';
-                                setTimeout(() => {
-                                    this.style.background = '';
-                                }, 300);
-                            }
-                            updateStats();
-                        });
                     } else {
                         // 普通键（数字、符号、功能键）
-                        keyDiv.textContent = keyData.display || '';
+                        if (keyData.key === ' ') {
+                            keyDiv.textContent = `难度${currentDifficulty}`;
+                        } else {
+                            keyDiv.textContent = keyData.display || '';
+                        }
                     }
 
                     rowDiv.appendChild(keyDiv);
@@ -504,15 +609,61 @@
         }
 
         function nextRadical() {
-            const keys = Object.keys(radicalData).filter(k => radicalData[k].radicals.length > 0);
-            currentKey = keys[Math.floor(Math.random() * keys.length)];
-            const keyData = radicalData[currentKey];
-            currentRadical = keyData.radicals[Math.floor(Math.random() * keyData.radicals.length)];
+            // 收集所有可能的练习内容：字根 + 一级简码汉字
+            const allPracticeItems = [];
             
-            document.getElementById('radicalChar').textContent = currentRadical;
-            document.getElementById('radicalName').textContent = keyData.name;
+            // 添加所有字根
+            Object.keys(radicalData).forEach(key => {
+                const data = radicalData[key];
+                if (data.radicals.length > 0) {
+                    data.radicals.forEach(radical => {
+                        allPracticeItems.push({
+                            type: 'radical',
+                            key: key,
+                            char: radical,
+                            name: data.name
+                        });
+                    });
+                }
+            });
             
-            highlightKey(currentKey);
+            // 添加所有一级简码（难度2、3、4包含一级简码）
+            if (currentDifficulty >= 2) {
+                Object.keys(level1Codes).forEach(key => {
+                    allPracticeItems.push({
+                        type: 'level1',
+                        key: key,
+                        char: level1Codes[key],
+                        name: `一级简码: ${key.toUpperCase()}=${level1Codes[key]}`
+                    });
+                });
+            }
+            
+            // 随机选择一个
+            const item = allPracticeItems[Math.floor(Math.random() * allPracticeItems.length)];
+            currentKey = item.key;
+            currentRadical = item.type === 'radical' ? item.char : null;
+            
+            const radicalCharEl = document.getElementById('radicalChar');
+            radicalCharEl.textContent = item.char;
+            document.getElementById('radicalName').textContent = item.name;
+            
+            if (item.type === 'level1') {
+                // 一级简码
+                radicalCharEl.style.fontFamily = "'Noto Serif SC', serif";
+                radicalCharEl.classList.add('level1-code');
+            } else {
+                // 字根
+                radicalCharEl.style.fontFamily = "'WubiRoot', sans-serif";
+                radicalCharEl.classList.remove('level1-code');
+            }
+            
+            // 级别一默认高亮，级别二不输错不高亮，级别三和四不显示高亮
+            if (currentDifficulty === 1) {
+                highlightKey(currentKey);
+            } else {
+                document.querySelectorAll('.key').forEach(k => k.classList.remove('highlighted'));
+            }
         }
 
         function highlightKey(key) {
@@ -524,15 +675,22 @@
         }
 
         function handleKeyPress(event) {
-            // 忽略控制键（Ctrl、Shift、Alt、Command）
-            if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey) {
+            // Ctrl+空格切换难度
+            if (event.ctrlKey && event.code === 'Space') {
+                event.preventDefault();
+                toggleDifficulty();
+                return;
+            }
+            
+            // 忽略其他控制键（Shift、Alt、Command）
+            if (event.shiftKey || event.altKey || event.metaKey) {
                 return;
             }
             
             const key = event.key.toLowerCase();
             
-            // 忽略 Tab、Caps Lock 和方向键
-            if (key === 'tab' || key === 'capslock' || ['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
+            // 忽略 Ctrl、Tab、Caps Lock 和方向键
+            if (key === 'control' || key === 'tab' || key === 'capslock' || ['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
                 return;
             }
             
@@ -544,13 +702,19 @@
                         document.getElementById('radicalChar').classList.remove('success');
                         nextRadical();
                     }, 300);
-                } else {
-                    wrongCount++;
-                    document.getElementById('radicalChar').style.color = '#EF4444';
-                    setTimeout(() => {
-                        document.getElementById('radicalChar').style.color = '#333';
-                    }, 300);
+            } else {
+                wrongCount++;
+                document.getElementById('radicalChar').classList.add('error');
+                
+                // 级别二：输错时高亮正确键
+                if (currentDifficulty === 2) {
+                    highlightKey(currentKey);
                 }
+                
+                setTimeout(() => {
+                    document.getElementById('radicalChar').classList.remove('error');
+                }, 300);
+            }
                 updateStats();
             }
         }
@@ -566,6 +730,49 @@
             document.getElementById('correctCount').textContent = correctCount;
             document.getElementById('wrongCount').textContent = wrongCount;
             document.getElementById('totalCount').textContent = total;
+        }
+
+        function toggleDifficulty() {
+            currentDifficulty++;
+            if (currentDifficulty > DIFFICULTY_LEVELS) {
+                currentDifficulty = 1;
+            }
+            
+            // 重置进度
+            correctCount = 0;
+            wrongCount = 0;
+            startTime = Date.now();
+            updateStats();
+            
+            // 重新生成键盘以更新字根显示
+            generateKeyboard();
+            
+            // 生成新练习内容
+            nextRadical();
+            
+            // 显示切换提示
+            showDifficultyNotification();
+        }
+
+        function showDifficultyNotification() {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(79, 70, 229, 0.95);
+                color: white;
+                padding: 20px 40px;
+                border-radius: 12px;
+                font-size: 18px;
+                font-weight: bold;
+                z-index: 1000;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            `;
+            notification.textContent = `切换到难度 ${currentDifficulty}`;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 1500);
         }
 
         init();

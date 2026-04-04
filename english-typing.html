@@ -88,6 +88,14 @@
             line-height: 1;
         }
 
+        .target-char.needs-shift {
+            color: #4F46E5;
+        }
+
+        .target-char.error {
+            color: #EF4444;
+        }
+
         .char-info {
             font-size: 16px;
             color: #666;
@@ -296,10 +304,55 @@
             ' '
         ];
 
+        // 难度级别定义
+        const DIFFICULTY_LEVELS = 4;
+        let currentDifficulty = 1;
+
+        // 级别一：不需要Shift的字符
+        const level1Chars = [
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+            'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            '`', '-', '=', '[', ']', '\\', ';', "'", ',', '.', '/'
+        ];
+
+        // 级别二：需要Shift的字符
+        const shiftChars = [
+            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+            '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+',
+            '{', '}', '|', ':', '"', '<', '>', '?'
+        ];
+
         let currentChar = null;
         let correctCount = 0;
         let wrongCount = 0;
         let startTime = null;
+
+        // 字符到基础键的映射（需要Shift的字符 -> 对应的基础键）
+        const shiftCharToBaseKey = {
+            // 数字行上档字符
+            '~': '`', '!': '1', '@': '2', '#': '3', '$': '4', '%': '5',
+            '^': '6', '&': '7', '*': '8', '(': '9', ')': '0', '_': '-', '+': '=',
+            // 字母行上档字符
+            '{': '[', '}': ']', '|': '\\',
+            // ASDF行上档字符
+            ':': ';', '"': "'",
+            // ZXCV行上档字符
+            '<': ',', '>': '.', '?': '/',
+            // 大写字母映射到小写
+            'A': 'a', 'B': 'b', 'C': 'c', 'D': 'd', 'E': 'e', 'F': 'f', 'G': 'g',
+            'H': 'h', 'I': 'i', 'J': 'j', 'K': 'k', 'L': 'l', 'M': 'm', 'N': 'n',
+            'O': 'o', 'P': 'p', 'Q': 'q', 'R': 'r', 'S': 's', 'T': 't', 'U': 'u',
+            'V': 'v', 'W': 'w', 'X': 'x', 'Y': 'y', 'Z': 'z'
+        };
+
+        // 判断字符是否需要左手按（左手区域键需要用右Shift）
+        function needsLeftHand(char) {
+            const leftHandChars = '`12345qwertasdfgzxcvb';
+            const baseKey = shiftCharToBaseKey[char] || char.toLowerCase();
+            return leftHandChars.includes(baseKey);
+        }
 
         function generateKeyboard() {
             const keyboard = document.getElementById('keyboard');
@@ -319,7 +372,11 @@
                     if (keyData.wide) keyDiv.classList.add('wide');
                     
                     keyDiv.setAttribute('data-key', keyData.key);
-                    keyDiv.textContent = keyData.display || keyData.key.toUpperCase();
+                    if (keyData.key === ' ') {
+                        keyDiv.textContent = `难度${currentDifficulty}`;
+                    } else {
+                        keyDiv.textContent = keyData.display || keyData.key.toUpperCase();
+                    }
                     
                     keyDiv.addEventListener('click', function() {
                         handleInput(keyData.key);
@@ -340,30 +397,80 @@
         }
 
         function nextChar() {
-            currentChar = practiceChars[Math.floor(Math.random() * practiceChars.length)];
+            if (currentDifficulty === 1) {
+                // 级别一：只从level1Chars选择
+                currentChar = level1Chars[Math.floor(Math.random() * level1Chars.length)];
+            } else if (currentDifficulty === 2) {
+                // 级别二：1:10比例插入shift字符（约9%概率）
+                if (Math.random() < 0.1) {
+                    currentChar = shiftChars[Math.floor(Math.random() * shiftChars.length)];
+                } else {
+                    currentChar = level1Chars[Math.floor(Math.random() * level1Chars.length)];
+                }
+            } else {
+                // 级别三、四：随机混合所有字符
+                const allChars = [...level1Chars, ...shiftChars];
+                currentChar = allChars[Math.floor(Math.random() * allChars.length)];
+            }
             
             document.getElementById('targetChar').textContent = currentChar === ' ' ? '␣' : currentChar;
             document.getElementById('charInfo').textContent = currentChar === ' ' ? '空格键' : '';
             
-            highlightKey(currentChar);
+            // 需要Shift的字符用颜色区分
+            const targetCharEl = document.getElementById('targetChar');
+            const needsShift = shiftChars.includes(currentChar) || (currentChar >= 'A' && currentChar <= 'Z');
+            if (needsShift) {
+                targetCharEl.classList.add('needs-shift');
+            } else {
+                targetCharEl.classList.remove('needs-shift');
+            }
+            
+            // 级别一、二显示高亮；级别三、四默认不显示
+            if (currentDifficulty === 1 || currentDifficulty === 2) {
+                highlightKey(currentChar);
+            } else {
+                document.querySelectorAll('.key').forEach(k => k.classList.remove('highlighted'));
+            }
         }
 
         function highlightKey(char) {
             document.querySelectorAll('.key').forEach(k => k.classList.remove('highlighted'));
             
-            const keyElement = document.querySelector(`.key[data-key="${char}"]`);
+            // 获取基础键（需要Shift的字符映射到基础键）
+            let baseKey = shiftCharToBaseKey[char] || char;
+            
+            // 处理反斜杠转义问题
+            let selector = `.key[data-key="${baseKey}"]`;
+            if (baseKey === '\\') {
+                selector = '.key[data-key="\\\\"]'; // CSS选择器中需要双重转义
+            }
+            
+            const keyElement = document.querySelector(selector);
             if (keyElement) {
                 keyElement.classList.add('highlighted');
+            }
+            
+            // 如果是需要Shift的字符，同时高亮对应的Shift键
+            const needsShift = shiftChars.includes(char) || (char >= 'A' && char <= 'Z');
+            if (needsShift) {
+                // 左手字符用右Shift，右手字符用左Shift
+                const useRightShift = needsLeftHand(char);
+                const shiftKey = useRightShift ? 'Shift2' : 'Shift';
+                const shiftElement = document.querySelector(`.key[data-key="${shiftKey}"]`);
+                if (shiftElement) {
+                    shiftElement.classList.add('highlighted');
+                }
             }
         }
 
         function handleInput(input) {
             if (!currentChar) return;
             
-            const inputLower = input.toLowerCase();
-            const targetLower = currentChar.toLowerCase();
+            // 区分大小写：需要Shift的字符必须按Shift输入
+            const needsShift = shiftChars.includes(currentChar) || (currentChar >= 'A' && currentChar <= 'Z');
+            const isCorrect = needsShift ? (input === currentChar) : (input.toLowerCase() === currentChar.toLowerCase());
             
-            if (inputLower === targetLower) {
+            if (isCorrect) {
                 correctCount++;
                 document.getElementById('targetChar').classList.add('success');
                 setTimeout(() => {
@@ -373,16 +480,80 @@
             } else {
                 wrongCount++;
                 document.getElementById('targetChar').classList.add('shake');
-                document.getElementById('targetChar').style.color = '#EF4444';
+                // 临时添加错误颜色类，不使用内联样式
+                document.getElementById('targetChar').classList.add('error');
+                
+                // 级别三：输错时才高亮提示
+                if (currentDifficulty === 3) {
+                    highlightKey(currentChar);
+                }
+                
                 setTimeout(() => {
                     document.getElementById('targetChar').classList.remove('shake');
-                    document.getElementById('targetChar').style.color = '#333';
+                    document.getElementById('targetChar').classList.remove('error');
                 }, 300);
             }
             updateStats();
         }
 
+        function toggleDifficulty() {
+            currentDifficulty++;
+            if (currentDifficulty > DIFFICULTY_LEVELS) {
+                currentDifficulty = 1;
+            }
+            
+            // 重置进度
+            correctCount = 0;
+            wrongCount = 0;
+            startTime = Date.now();
+            updateStats();
+            
+            // 更新空格键显示
+            updateSpaceKeyDisplay();
+            
+            // 生成新字符
+            nextChar();
+            
+            // 显示切换提示
+            showDifficultyNotification();
+        }
+
+        function updateSpaceKeyDisplay() {
+            const spaceKey = document.querySelector('.key[data-key=" "]');
+            if (spaceKey) {
+                spaceKey.textContent = `难度${currentDifficulty}`;
+            }
+        }
+
+        function showDifficultyNotification() {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(79, 70, 229, 0.95);
+                color: white;
+                padding: 20px 40px;
+                border-radius: 12px;
+                font-size: 18px;
+                font-weight: bold;
+                z-index: 1000;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            `;
+            notification.textContent = `切换到难度 ${currentDifficulty}`;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 1500);
+        }
+
         function handleKeyPress(event) {
+            // Ctrl+空格切换难度
+            if (event.ctrlKey && event.code === 'Space') {
+                event.preventDefault();
+                toggleDifficulty();
+                return;
+            }
+            
             if (event.ctrlKey || event.altKey || event.metaKey) {
                 return;
             }
