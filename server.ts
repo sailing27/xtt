@@ -1,12 +1,14 @@
 // BUN Server for XTT Typing Practice Application
 // Run with: bun run server.ts
-// Access at: http://localhost:8899
+// Access at: http://0.0.0.0:8899
 
 const PORT = 8899;
+const HOSTNAME = "0.0.0.0";
 
 // Simple static file server using BUN
 const server = Bun.serve({
   port: PORT,
+  hostname: HOSTNAME,
   fetch(request) {
     const url = new URL(request.url);
     let path = url.pathname;
@@ -62,5 +64,5 @@ const server = Bun.serve({
   }
 });
 
-console.log(`✅ XTT Typing Practice Server running at http://localhost:${PORT}`);
+console.log(`✅ XTT Typing Practice Server running at http://${HOSTNAME}:${PORT}`);
 console.log(`   Press Ctrl+C to stop the server`);
