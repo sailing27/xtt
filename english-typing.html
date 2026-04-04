@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英文打字练习 - 小许打字</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 20px;
+            overflow: hidden;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            min-height: 0;
+            position: relative;
+        }
+
+        .stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            color: white;
+            font-size: 14px;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            font-size: 20px;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .spacer {
+            height: 10vh;
+            flex-shrink: 0;
+            width: 100%;
+        }
+
+        .char-display {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 80px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .target-char {
+            font-size: 150px;
+            color: #333;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            line-height: 1;
+        }
+
+        .char-info {
+            font-size: 16px;
+            color: #666;
+            margin-top: 10px;
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        .keyboard-container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 0;
+            flex-shrink: 0;
+            width: 815px;
+        }
+
+        .keyboard {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .keyboard-row {
+            display: flex;
+            gap: 5px;
+            justify-content: flex-start;
+            width: 100%;
+        }
+
+        .key {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            box-shadow: 
+                0 3px 0 #b8b8b8,
+                0 4px 8px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            transition: all 0.1s ease;
+            cursor: pointer;
+            border: 1px solid #d0d0d0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            flex-shrink: 0;
+            line-height: 1.2;
+            white-space: pre-line;
+            text-align: center;
+        }
+
+        .key.flex {
+            flex: 1;
+            width: auto;
+            min-width: 50px;
+        }
+
+        .key.wide {
+            width: 75px;
+        }
+
+        .key:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 5px 0 #b8b8b8,
+                0 6px 12px rgba(0,0,0,0.35),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+        }
+
+        .key:active {
+            transform: translateY(2px);
+            box-shadow: 
+                0 1px 0 #b8b8b8,
+                0 2px 4px rgba(0,0,0,0.3),
+                inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .key.highlighted {
+            background: linear-gradient(145deg, #5a4fe1, #4338ca);
+            color: white;
+            box-shadow: 
+                0 5px 0 #312e81,
+                0 0 25px rgba(79, 70, 229, 0.8),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+            border: 1px solid #4338ca;
+        }
+
+        .key.highlighted:active {
+            box-shadow: 
+                0 2px 0 #312e81,
+                0 0 15px rgba(79, 70, 229, 0.6),
+                inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        @keyframes success {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .success {
+            animation: success 0.3s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .shake {
+            animation: shake 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-value" id="speed">0</span>
+                <span class="stat-label">字/分</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="accuracy">0%</span>
+                <span class="stat-label">正确率</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="correctCount">0</span>
+                <span class="stat-label">正确</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="wrongCount">0</span>
+                <span class="stat-label">错误</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="totalCount">0</span>
+                <span class="stat-label">总数</span>
+            </div>
+        </div>
+
+        <div class="spacer"></div>
+
+        <div class="char-display">
+            <div class="target-char" id="targetChar">a</div>
+            <div class="char-info" id="charInfo"></div>
+        </div>
+    </div>
+
+    <div class="keyboard-container">
+        <div class="keyboard" id="keyboard"></div>
+    </div>
+
+    <script>
+        // 键盘布局（显示双字符）
+        const keyboardLayout = [
+            // 第1行: 数字行
+            [
+                { key: '`', display: '~\n`' }, { key: '1', display: '!\n1' }, { key: '2', display: '@\n2' }, 
+                { key: '3', display: '#\n3' }, { key: '4', display: '$\n4' }, { key: '5', display: '%\n5' },
+                { key: '6', display: '^\n6' }, { key: '7', display: '&\n7' }, { key: '8', display: '*\n8' },
+                { key: '9', display: '(\n9' }, { key: '0', display: ')\n0' }, { key: '-', display: '_\n-' },
+                { key: '=', display: '+\n=' }, { key: 'Backspace', display: '←', flex: true }
+            ],
+            // 第2行: QWERTY行
+            [
+                { key: 'Tab', display: 'Tab', flex: true }, { key: 'q', display: 'Q' }, { key: 'w', display: 'W' }, 
+                { key: 'e', display: 'E' }, { key: 'r', display: 'R' }, { key: 't', display: 'T' },
+                { key: 'y', display: 'Y' }, { key: 'u', display: 'U' }, { key: 'i', display: 'I' },
+                { key: 'o', display: 'O' }, { key: 'p', display: 'P' }, { key: '[', display: '{\n[' }, 
+                { key: ']', display: '}\n]' }, { key: '\\', display: '|\n\\' }
+            ],
+            // 第3行: ASDF行
+            [
+                { key: 'CapsLock', display: 'Caps', flex: true }, { key: 'a', display: 'A' }, { key: 's', display: 'S' }, 
+                { key: 'd', display: 'D' }, { key: 'f', display: 'F' }, { key: 'g', display: 'G' },
+                { key: 'h', display: 'H' }, { key: 'j', display: 'J' }, { key: 'k', display: 'K' },
+                { key: 'l', display: 'L' }, { key: ';', display: ':\n;' }, { key: "'", display: '"\n\'' }, 
+                { key: 'Enter', display: 'Enter', flex: true }
+            ],
+            // 第4行: ZXCV行
+            [
+                { key: 'Shift', display: 'Shift', flex: true }, { key: 'z', display: 'Z' }, { key: 'x', display: 'X' }, 
+                { key: 'c', display: 'C' }, { key: 'v', display: 'V' }, { key: 'b', display: 'B' },
+                { key: 'n', display: 'N' }, { key: 'm', display: 'M' }, { key: ',', display: '<\n,' },
+                { key: '.', display: '>\n.' }, { key: '/', display: '?\n/' }, { key: 'Shift2', display: 'Shift', flex: true }
+            ],
+            // 第5行: 控制行
+            [
+                { key: 'Control', display: 'Ctrl', wide: true }, { key: 'Alt', display: 'Alt', wide: true },
+                { key: ' ', display: '', flex: true }, { key: 'Alt2', display: 'Alt', wide: true },
+                { key: 'Control2', display: 'Ctrl', wide: true }
+            ]
+        ];
+
+        // 所有可练习的字符
+        const practiceChars = [
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+            'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            '`', '-', '=', '[', ']', '\\', ';', "'", ',', '.', '/',
+            ' '
+        ];
+
+        let currentChar = null;
+        let correctCount = 0;
+        let wrongCount = 0;
+        let startTime = null;
+
+        function generateKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            keyboard.innerHTML = '';
+
+            keyboardLayout.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'keyboard-row';
+
+                row.forEach(keyData => {
+                    if (keyData.hidden) return;
+                    
+                    const keyDiv = document.createElement('div');
+                    keyDiv.className = 'key';
+                    
+                    if (keyData.flex) keyDiv.classList.add('flex');
+                    if (keyData.wide) keyDiv.classList.add('wide');
+                    
+                    keyDiv.setAttribute('data-key', keyData.key);
+                    keyDiv.textContent = keyData.display || keyData.key.toUpperCase();
+                    
+                    keyDiv.addEventListener('click', function() {
+                        handleInput(keyData.key);
+                    });
+
+                    rowDiv.appendChild(keyDiv);
+                });
+
+                keyboard.appendChild(rowDiv);
+            });
+        }
+
+        function init() {
+            startTime = Date.now();
+            generateKeyboard();
+            nextChar();
+            document.addEventListener('keydown', handleKeyPress);
+        }
+
+        function nextChar() {
+            currentChar = practiceChars[Math.floor(Math.random() * practiceChars.length)];
+            
+            document.getElementById('targetChar').textContent = currentChar === ' ' ? '␣' : currentChar;
+            document.getElementById('charInfo').textContent = currentChar === ' ' ? '空格键' : '';
+            
+            highlightKey(currentChar);
+        }
+
+        function highlightKey(char) {
+            document.querySelectorAll('.key').forEach(k => k.classList.remove('highlighted'));
+            
+            const keyElement = document.querySelector(`.key[data-key="${char}"]`);
+            if (keyElement) {
+                keyElement.classList.add('highlighted');
+            }
+        }
+
+        function handleInput(input) {
+            if (!currentChar) return;
+            
+            const inputLower = input.toLowerCase();
+            const targetLower = currentChar.toLowerCase();
+            
+            if (inputLower === targetLower) {
+                correctCount++;
+                document.getElementById('targetChar').classList.add('success');
+                setTimeout(() => {
+                    document.getElementById('targetChar').classList.remove('success');
+                    nextChar();
+                }, 300);
+            } else {
+                wrongCount++;
+                document.getElementById('targetChar').classList.add('shake');
+                document.getElementById('targetChar').style.color = '#EF4444';
+                setTimeout(() => {
+                    document.getElementById('targetChar').classList.remove('shake');
+                    document.getElementById('targetChar').style.color = '#333';
+                }, 300);
+            }
+            updateStats();
+        }
+
+        function handleKeyPress(event) {
+            if (event.ctrlKey || event.altKey || event.metaKey) {
+                return;
+            }
+            
+            const key = event.key;
+            
+            if (['Tab', 'CapsLock', 'Backspace', 'Enter', 'Control', 'Alt', 'Shift', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
+                return;
+            }
+            
+            handleInput(key);
+        }
+
+        function updateStats() {
+            const total = correctCount + wrongCount;
+            const elapsed = (Date.now() - startTime) / 1000 / 60;
+            const speed = elapsed > 0 ? Math.round(total / elapsed) : 0;
+            const accuracy = total > 0 ? Math.round(correctCount / total * 100) : 0;
+            
+            document.getElementById('speed').textContent = speed;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+            document.getElementById('correctCount').textContent = correctCount;
+            document.getElementById('wrongCount').textContent = wrongCount;
+            document.getElementById('totalCount').textContent = total;
+        }
+
+        init();
+    </script>
+</body>
+</html>
