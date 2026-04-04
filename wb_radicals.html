@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五笔字根练习 - 小许打字</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* 版本: v4 - 完整键盘布局 */
+        @font-face {
+            font-family: 'WubiRoot';
+            src: url('wubi_radicals.woff2?v=2') format('woff2');
+            font-display: swap;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 20px;
+            overflow: hidden;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            min-height: 0;
+            position: relative;
+        }
+
+        .stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            color: white;
+            font-size: 14px;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            font-size: 20px;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .spacer {
+            height: 10vh;
+            flex-shrink: 0;
+            width: 100%;
+        }
+
+        .radical-display {
+            background: white;
+            border-radius: 20px;
+            padding: 20px 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            text-align: center;
+            min-width: 250px;
+            margin-bottom: 15px;
+        }
+
+        .radical-char {
+            font-size: 120px;
+            color: #333;
+            font-weight: bold;
+            font-family: 'WubiRoot', sans-serif;
+            margin-bottom: 10px;
+        }
+
+        .radical-name {
+            font-size: 16px;
+            color: #666;
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        .keyboard-container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 0;
+            flex-shrink: 0;
+        }
+
+        .keyboard {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .keyboard-row {
+            display: flex;
+            gap: 5px;
+            justify-content: flex-start;
+            width: 100%;
+        }
+
+        .key {
+            width: 62px;
+            height: 62px;
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            box-shadow: 
+                0 3px 0 #b8b8b8,
+                0 4px 8px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            transition: all 0.1s ease;
+            cursor: pointer;
+            border: 1px solid #d0d0d0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            font-weight: bold;
+            color: #333;
+            flex-shrink: 0;
+            line-height: 1.2;
+            white-space: pre-line;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .key.has-radicals {
+            font-family: 'WubiRoot', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+            font-size: 10px;
+            padding: 4px;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .key-radicals-wrapper {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            flex: 1;
+            padding: 2px 0;
+        }
+
+        .key-radicals {
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            justify-content: flex-start;
+            align-items: flex-start;
+            gap: 0;
+            font-size: 9px;
+            color: #333;
+            line-height: 1.0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'WubiRoot', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+            font-weight: 500;
+        }
+
+        .key-radicals .radical-item {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            margin: 0;
+            font-size: 10px;
+            width: 12px;
+            flex-shrink: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .key.flex {
+            flex: 1;
+            width: auto;
+            min-width: 62px;
+        }
+
+        .key.wide {
+            width: 92px;
+        }
+
+        .key:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 5px 0 #b8b8b8,
+                0 6px 12px rgba(0,0,0,0.35),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+        }
+
+        .key:active {
+            transform: translateY(2px);
+            box-shadow: 
+                0 1px 0 #b8b8b8,
+                0 2px 4px rgba(0,0,0,0.3),
+                inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .key.highlighted {
+            background: linear-gradient(145deg, #5a4fe1, #4338ca);
+            color: white;
+            box-shadow: 
+                0 5px 0 #312e81,
+                0 0 25px rgba(79, 70, 229, 0.8),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+            border: 1px solid #4338ca;
+        }
+
+        .key.highlighted .key-radicals {
+            color: white;
+        }
+
+        .key-footer {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2px;
+            margin-top: auto;
+        }
+
+        .key-letter {
+            font-size: 11px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            color: #4F46E5;
+            margin-left: auto;
+        }
+
+        .key-first {
+            font-size: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .key.highlighted .key-first,
+        .key.highlighted .key-letter {
+            color: #fff;
+        }
+
+        @keyframes success {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .success {
+            animation: success 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-value" id="speed">0</span>
+                <span class="stat-label">字/分</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="accuracy">0%</span>
+                <span class="stat-label">正确率</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="correctCount">0</span>
+                <span class="stat-label">正确</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="wrongCount">0</span>
+                <span class="stat-label">错误</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="totalCount">0</span>
+                <span class="stat-label">总数</span>
+            </div>
+        </div>
+
+        <div class="spacer"></div>
+
+        <div class="radical-display">
+            <div class="radical-char" id="radicalChar">王</div>
+            <div class="radical-name" id="radicalName"></div>
+        </div>
+    </div>
+
+    <div class="keyboard-container">
+        <div class="keyboard" id="keyboard"></div>
+    </div>
+
+    <script>
+        function renderRadical(radical) {
+            return radical;
+        }
+
+        function generatePUARange(start, end, exclude = []) {
+            const chars = [];
+            for (let cp = start; cp <= end; cp++) {
+                if (!exclude.includes(cp)) {
+                    chars.push(String.fromCodePoint(cp));
+                }
+            }
+            return chars;
+        }
+
+        // 五笔字根数据（只包含25个字母键）
+        const radicalData = {
+            "q": { radicals: generatePUARange(0xE200, 0xE206).concat(generatePUARange(0xE209, 0xE20C)), name: "金勹缺点无尾鱼", first: "我" },
+            "w": { radicals: generatePUARange(0xE212, 0xE216), name: "人和八，三四里", first: "人" },
+            "e": { radicals: ["\uE21C", "\uE21E", "\uE220", "\uE221", "\uE222", "\uE223", "\uE224", "\uE226", "\uE227", "\uE22A", "\uE22E", "\uE22F"], name: "月彡乃用家衣底", first: "有" },
+            "r": { radicals: generatePUARange(0xE230, 0xE238), name: "白手看头三二斤", first: "的" },
+            "t": { radicals: generatePUARange(0xE240, 0xE249), name: "禾竹一撇双人立", first: "和" },
+            "y": { radicals: generatePUARange(0xE250, 0xE258), name: "言文方广在四一", first: "主" },
+            "u": { radicals: ["\uE260", "\uE25B", "\uE25C", "\uE25D", "\uE25E", "\uE25F", "\uE261", "\uE262", "\uE263", "\uE264", "\uE265", "\uE266", "\uE267", "\uE268", "\uE269"], name: "立辛两点六门疒", first: "产" },
+            "i": { radicals: ["\uE270", "\uE271", "\uE272", "\uE273", "\uE274", "\uE277", "\uE278", "\uE279", "\uE27C", "\uE27D"], name: "水旁兴头小倒立", first: "不" },
+            "o": { radicals: ["\uE280", "\uE281", "\uE282", "\uE283", "\uE285", "\uE286"], name: "火业头，四点米", first: "为" },
+            "p": { radicals: ["\uE290", "\uE291", "\uE293", "\uE294", "\uE295", "\uE296"], name: "之字军盖建道底", first: "这" },
+            "a": { radicals: ["\uE2A0", "\uE2A1", "\uE2A2", "\uE2A3", "\uE2A4", "\uE2A6", "\uE2A8", "\uE2A9", "\uE2AB", "\uE2AE"], name: "工戈草头右框七", first: "工" },
+            "s": { radicals: generatePUARange(0xE2B0, 0xE2B5), name: "木丁西", first: "要" },
+            "d": { radicals: generatePUARange(0xE2C0, 0xE2CB), name: "大犬三羊古石厂", first: "在" },
+            "f": { radicals: generatePUARange(0xE2D0, 0xE2D8), name: "土士二干十寸雨", first: "地" },
+            "g": { radicals: ["\uE2E0", "\uE2E1", "\uE2E2", "\uE2E3", "\u9FB6", "\uE2E7"], name: "王旁青头戋五一", first: "一" },
+            "h": { radicals: ["\uE2F0", "\uE2EF", "\uE2F1", "\uE2F2", "\uE2F3", "\uE2F4", "\uE2F5", "\uE2F6", "\uE2F8", "\uE2F9", "\uE2FA", "\uE2FB"], name: "目具上止卜虎皮", first: "上" },
+            "j": { radicals: ["\uE300", "\uE301", "\uE303", "\uE304", "\uE305", "\uE306", "\uE307", "\uE30A", "\uE30B"], name: "日早两竖与虫依", first: "是" },
+            "k": { radicals: generatePUARange(0xE310, 0xE312), name: "口与川，字根稀", first: "中" },
+            "l": { radicals: generatePUARange(0xE320, 0xE32B), name: "田甲方框四车力", first: "国" },
+            "m": { radicals: generatePUARange(0xE330, 0xE336), name: "山由贝，下框几", first: "同" },
+            "x": { radicals: ["\uE340", "\uE341", "\uE342", "\uE343", "\uE344", "\uE345", "\uE346", "\uE348", "\uE349", "\uE34A", "\uE34B"], name: "纟幺母幼无力", first: "经" },
+            "c": { radicals: ["\uE350", "\uE351", "\uE352", "\uE353", "\uE355", "\uE358"], name: "又巴马，丢矢矣", first: "以" },
+            "v": { radicals: ["\uE360", "\uE361", "\uE362", "\uE363", "\uE364", "\uE367", "\uE368", "\uE22B"], name: "女刀九臼山朝西", first: "发" },
+            "b": { radicals: ["\uE370", "\uE371", "\uE372", "\uE374", "\uE375", "\uE376", "\uE377", "\uE378", "\uE37B", "\uE37C"], name: "子耳了也框向上", first: "了" },
+            "n": { radicals: ["\uE380", "\uE381", "\uE382", "\uE383", "\uE385", "\uE386", "\uE387", "\uE388", "\uE389", "\uE38C", "\uE38D", "\uE38E"], name: "已半巳满不出己", first: "民" },
+            "z": { radicals: [], name: "万能学习键", first: "" }
+        };
+
+        // 完整键盘布局（和英文页面一致）
+        const keyboardLayout = [
+            // 第1行: 数字行
+            [
+                { key: '`', display: '~\n`' }, { key: '1', display: '!\n1' }, { key: '2', display: '@\n2' }, 
+                { key: '3', display: '#\n3' }, { key: '4', display: '$\n4' }, { key: '5', display: '%\n5' },
+                { key: '6', display: '^\n6' }, { key: '7', display: '&\n7' }, { key: '8', display: '*\n8' },
+                { key: '9', display: '(\n9' }, { key: '0', display: ')\n0' }, { key: '-', display: '_\n-' },
+                { key: '=', display: '+\n=' }, { key: 'Backspace', display: '←', flex: true }
+            ],
+            // 第2行: QWERTY行
+            [
+                { key: 'Tab', display: 'Tab', flex: true }, { key: 'q', hasRadicals: true }, { key: 'w', hasRadicals: true }, 
+                { key: 'e', hasRadicals: true }, { key: 'r', hasRadicals: true }, { key: 't', hasRadicals: true },
+                { key: 'y', hasRadicals: true }, { key: 'u', hasRadicals: true }, { key: 'i', hasRadicals: true },
+                { key: 'o', hasRadicals: true }, { key: 'p', hasRadicals: true }, { key: '[', display: '{\n[' }, 
+                { key: ']', display: '}\n]' }, { key: '\\', display: '|\n\\' }
+            ],
+            // 第3行: ASDF行
+            [
+                { key: 'CapsLock', display: 'Caps', flex: true }, { key: 'a', hasRadicals: true }, { key: 's', hasRadicals: true }, 
+                { key: 'd', hasRadicals: true }, { key: 'f', hasRadicals: true }, { key: 'g', hasRadicals: true },
+                { key: 'h', hasRadicals: true }, { key: 'j', hasRadicals: true }, { key: 'k', hasRadicals: true },
+                { key: 'l', hasRadicals: true }, { key: ';', display: ':\n;' }, { key: "'", display: '"\n\'' }, 
+                { key: 'Enter', display: 'Enter', flex: true }
+            ],
+            // 第4行: ZXCV行
+            [
+                { key: 'Shift', display: 'Shift', flex: true }, { key: 'z', hasRadicals: true, display: 'Z' }, { key: 'x', hasRadicals: true }, 
+                { key: 'c', hasRadicals: true }, { key: 'v', hasRadicals: true }, { key: 'b', hasRadicals: true },
+                { key: 'n', hasRadicals: true }, { key: 'm', hasRadicals: true }, { key: ',', display: '<\n,' },
+                { key: '.', display: '>\n.' }, { key: '/', display: '?\n/' }, { key: 'Shift2', display: 'Shift', flex: true }
+            ],
+            // 第5行: 控制行
+            [
+                { key: 'Control', display: 'Ctrl', wide: true }, { key: 'Alt', display: 'Alt', wide: true },
+                { key: ' ', display: '', flex: true }, { key: 'Alt2', display: 'Alt', wide: true },
+                { key: 'Control2', display: 'Ctrl', wide: true }
+            ]
+        ];
+
+        let currentKey = null;
+        let currentRadical = null;
+        let correctCount = 0;
+        let wrongCount = 0;
+        let startTime = null;
+
+        function generateKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            keyboard.innerHTML = '';
+
+            keyboardLayout.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'keyboard-row';
+
+                row.forEach(keyData => {
+                    const key = keyData.key;
+                    const data = radicalData[key];
+                    
+                    const keyDiv = document.createElement('div');
+                    keyDiv.className = 'key';
+                    
+                    if (keyData.flex) keyDiv.classList.add('flex');
+                    if (keyData.wide) keyDiv.classList.add('wide');
+                    
+                    keyDiv.setAttribute('data-key', key);
+
+                    if (keyData.hasRadicals) {
+                        // 字母键（包括Z键）
+                        keyDiv.classList.add('has-radicals');
+                        
+                        // 外层包裹器（居中）
+                        const wrapperDiv = document.createElement('div');
+                        wrapperDiv.className = 'key-radicals-wrapper';
+                        
+                        // 内层字根容器（左对齐）
+                        const radicalsDiv = document.createElement('div');
+                        radicalsDiv.className = 'key-radicals';
+                        
+                        if (data && data.radicals.length > 0) {
+                            // 有字根的键（Q-Y, A-M）
+                            data.radicals.forEach(radical => {
+                                const span = document.createElement('span');
+                                span.className = 'radical-item';
+                                span.innerHTML = renderRadical(radical);
+                                radicalsDiv.appendChild(span);
+                            });
+                        }
+                        
+                        wrapperDiv.appendChild(radicalsDiv);
+                        keyDiv.appendChild(wrapperDiv);
+                        
+                        // 底部显示字母和首字（Z键只有字母）
+                        const footerDiv = document.createElement('div');
+                        footerDiv.className = 'key-footer';
+
+                        if (data && data.first) {
+                            const firstDiv = document.createElement('span');
+                            firstDiv.className = 'key-first';
+                            firstDiv.textContent = data.first;
+                            footerDiv.appendChild(firstDiv);
+                        }
+
+                        const letterDiv = document.createElement('span');
+                        letterDiv.className = 'key-letter';
+                        letterDiv.textContent = key.toUpperCase();
+                        footerDiv.appendChild(letterDiv);
+
+                        keyDiv.appendChild(footerDiv);
+
+                        keyDiv.addEventListener('click', function() {
+                            if (key === currentKey) {
+                                correctCount++;
+                                this.classList.add('success');
+                                setTimeout(() => {
+                                    this.classList.remove('success');
+                                    nextRadical();
+                                }, 300);
+                            } else {
+                                wrongCount++;
+                                this.style.background = '#EF4444';
+                                setTimeout(() => {
+                                    this.style.background = '';
+                                }, 300);
+                            }
+                            updateStats();
+                        });
+                    } else {
+                        // 普通键（数字、符号、功能键）
+                        keyDiv.textContent = keyData.display || '';
+                    }
+
+                    rowDiv.appendChild(keyDiv);
+                });
+
+                keyboard.appendChild(rowDiv);
+            });
+        }
+
+        function init() {
+            startTime = Date.now();
+            generateKeyboard();
+            nextRadical();
+            document.addEventListener('keydown', handleKeyPress);
+        }
+
+        function nextRadical() {
+            const keys = Object.keys(radicalData).filter(k => radicalData[k].radicals.length > 0);
+            currentKey = keys[Math.floor(Math.random() * keys.length)];
+            const keyData = radicalData[currentKey];
+            currentRadical = keyData.radicals[Math.floor(Math.random() * keyData.radicals.length)];
+            
+            document.getElementById('radicalChar').textContent = currentRadical;
+            document.getElementById('radicalName').textContent = keyData.name;
+            
+            highlightKey(currentKey);
+        }
+
+        function highlightKey(key) {
+            document.querySelectorAll('.key').forEach(k => k.classList.remove('highlighted'));
+            const keyElement = document.querySelector(`.key[data-key="${key}"]`);
+            if (keyElement) {
+                keyElement.classList.add('highlighted');
+            }
+        }
+
+        function handleKeyPress(event) {
+            // 忽略控制键（Ctrl、Shift、Alt、Command）
+            if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey) {
+                return;
+            }
+            
+            const key = event.key.toLowerCase();
+            
+            // 忽略 Tab、Caps Lock 和方向键
+            if (key === 'tab' || key === 'capslock' || ['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
+                return;
+            }
+            
+            if (key >= 'a' && key <= 'z') {
+                if (key === currentKey) {
+                    correctCount++;
+                    document.getElementById('radicalChar').classList.add('success');
+                    setTimeout(() => {
+                        document.getElementById('radicalChar').classList.remove('success');
+                        nextRadical();
+                    }, 300);
+                } else {
+                    wrongCount++;
+                    document.getElementById('radicalChar').style.color = '#EF4444';
+                    setTimeout(() => {
+                        document.getElementById('radicalChar').style.color = '#333';
+                    }, 300);
+                }
+                updateStats();
+            }
+        }
+
+        function updateStats() {
+            const total = correctCount + wrongCount;
+            const elapsed = (Date.now() - startTime) / 1000 / 60;
+            const speed = elapsed > 0 ? Math.round(total / elapsed) : 0;
+            const accuracy = total > 0 ? Math.round(correctCount / total * 100) : 0;
+            
+            document.getElementById('speed').textContent = speed;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+            document.getElementById('correctCount').textContent = correctCount;
+            document.getElementById('wrongCount').textContent = wrongCount;
+            document.getElementById('totalCount').textContent = total;
+        }
+
+        init();
+    </script>
+</body>
+</html>
